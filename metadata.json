@@ -1,6 +1,6 @@
 {
   "name": "Ask Fletch",
-  "description": "New homes coaching chat assistant based on David R. Fletcher's course materials",
+  "description": "New homes coaching from David R. Fletcher",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

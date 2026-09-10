@@ -1,0 +1,13 @@
+[
+  {
+    "id": "usr_baafe552-4112-40af-bc7a-5faac3eb590f",
+    "name": "Alp Kulgen",
+    "email": "kulgenalp@gmail.com",
+    "salt": "c96defe125540dffdc38fd4c380fdf6a",
+    "passwordHash": "220d9ca9dcaf6e8ab041e8371fbacd29e9858f473c64d2d7308382ac58e7b5c07f2548285d2673273feb7ce34f7bb04d5043e7e9b893ccd0c05663010b756ae5",
+    "role": "admin",
+    "status": "active",
+    "createdAt": "2026-09-10T15:00:50.190Z",
+    "lastLogin": "2026-09-10T17:49:51.784Z"
+  }
+]

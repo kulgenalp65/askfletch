@@ -1,0 +1,24 @@
+{
+  "textElements": {
+    "brandName": "Ask Fletch",
+    "brandTag": "New homes coaching from David R. Fletcher",
+    "welcomeTitle": "David R. Fletcher Coaching",
+    "welcomeDescription": "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.",
+    "inputPlaceholder": "Ask about pricing, builder relationships, buyer objections...",
+    "promptSuggestions": [
+      "How do I approach a new home builder for a co-broker relationship?",
+      "Why do builders refuse to cut base prices, and how should I negotiate?",
+      "What are the best practices for registering buyers with builders?"
+    ]
+  },
+  "designElements": {
+    "brassColor": "#A9824C",
+    "inkColor": "#1C2B39",
+    "sandColor": "#F3EEE3",
+    "paperColor": "#FCFAF5",
+    "radius": "6px",
+    "fontPreset": "classic"
+  },
+  "updatedAt": "2026-09-10T18:17:49.824Z",
+  "updatedBy": "restored-client"
+}

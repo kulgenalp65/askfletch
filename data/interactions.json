@@ -1,0 +1,52 @@
+[
+  {
+    "id": "int_89e72ddd-ad57-4419-ab44-6b6b5715b93d",
+    "timestamp": "2026-09-10T15:13:09.907Z",
+    "userId": "guest",
+    "userEmail": "Anonymous Agent",
+    "question": "What are Florida specific statutory deadlines for builder deposits and escrow holds?",
+    "answer": "David Fletcher's current course materials do not contain verified guidance on specific Florida statutory deadlines and escrow rules for builder deposits. \n\nBecause builder deposit handling in Florida is governed by strict state statutes rather than standard resale contract norms, keep the following legal framework in mind:\n\n* **Florida Statute § 501.1375 (Residential Construction Deposits):** For single-family homes and townhomes where the builder is also the developer/contractor, Florida law typically dictates how deposits up to 10% of the purchase price are handled versus funds exceeding 10%. Under certain conditions and clear contract disclosure, builders may be permitted to withdraw funds exceeding 10% for actual construction costs, or post a surety bond.\n* **Florida Statute Chapter 718 (Condominiums):** If you are dealing with new construction condominiums, escrow deposit release schedules follow entirely separate statutory milestones (e.g., pre-construction reservations vs. binding purchase contracts and completion of construction phases).\n* **Broker-Held vs. Builder-Held Escrow:** If your brokerage holds any earnest money, Florida Real Estate Commission (FREC) Chapter 475 deposit rules apply (deposit within 3 business days). However, production builders almost universally require deposits to be held directly in their designated escrow account or proprietary funds as outlined in their corporate contract.\n\n**Next Step:** Because statutory compliance and deposit release clauses vary based on the property type and the specific verbiage in the builder's proprietary contract, have your managing broker or a qualified Florida real estate attorney review the builder’s deposit and escrow addendum before your buyers release non-refundable funds.",
+    "sourcesUsed": [
+      "David Fletcher - NHCB Certification: How to Build a New Homes Niche (Core Principles).txt",
+      "David Fletcher - Overcoming Buyer Hesitations & Builder Negotiation Scripts.txt"
+    ],
+    "topicCategory": "Commission & Compensation Protection",
+    "jurisdiction": "Florida",
+    "rating": "thumbs_down",
+    "feedbackReason": "Not relevant to my market",
+    "feedbackComment": "Looking for standard builder contract deposit forfeiture timelines in Orange County FL",
+    "ratedAt": "2026-09-10T15:13:35.531Z",
+    "flaggedForReview": true,
+    "flagReason": "thumbs_down",
+    "flagLabel": "Agent Flagged: Needs improvement",
+    "reviewed": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "adminNotes": ""
+  },
+  {
+    "id": "int_c16106a8-ae98-4377-82b9-2ae317f58395",
+    "timestamp": "2026-09-10T15:12:53.073Z",
+    "userId": "guest",
+    "userEmail": "Anonymous Agent",
+    "question": "What should an agent do when registering a client at a new home builder model home?",
+    "answer": "The golden rule of new home co-brokering is absolute: **you must accompany your client on their very first visit to the sales office or model center.** \n\nIf a buyer walks in alone, registers their name, or tours the model before you introduce yourself as their representative, the builder’s policy will almost always exclude you from the transaction and disallow your commission—even if you write the contract later.\n\nTo protect your commission and set up a smooth transaction, follow this process:\n\n### 1. Call Ahead Before Arriving\n* Contact the on-site sales consultant before bringing your buyer through the door. \n* Introduce yourself as a cooperating broker, let them know who you are bringing and their general price point/timeline, and ask if they offer an online or phone pre-registration option.\n* Ask what specific inventory or standing spec homes they are most motivated to move right now.\n\n### 2. Accompany the Buyer Across the Threshold\n* Walk in together on the initial visit. \n* Do not wait in the car or send the client in ahead while you park. \n* Introduce your client to the on-site consultant directly, stating clearly: *\"I’m [Your Name] with [Brokerage], and this is [Buyer Name]. We are touring your community today, and I am representing them.\"*\n\n### 3. Ensure Proper Documentation on the Guest Card\n* Complete the builder’s guest registration card or digital kiosk entry together.\n* Ensure your full name, brokerage, email, and phone number are explicitly recorded in the \"Realtor / Broker Representation\" section.\n* Ask for a physical copy or take a photo of the completed registration card for your transaction records.\n\n### 4. Verify the Registration Window\n* Ask the sales counselor what their specific broker protection period is. Most builders enforce a 30-, 60-, or 90-day protection window.\n* Find out what keeps the registration active (e.g., subsequent visits, written updates, or an email to the sales consultant before the period expires).\n\n### 5. Establish the Ground Rules with Your Buyer Beforehand\nBrief your buyer prior to visiting communities so they don't inadvertently cut you out:\n> *\"Builders have strict registration rules. If you happen to drive by a neighborhood without me, please do not go into the sales center or sign a guest registry without letting me know first. If you walk in unrepresented, the builder will not allow me to represent your interests or review your contract.\"*",
+    "sourcesUsed": [
+      "David Fletcher - NHCB Certification: How to Build a New Homes Niche (Core Principles).txt",
+      "David Fletcher - Overcoming Buyer Hesitations & Builder Negotiation Scripts.txt"
+    ],
+    "topicCategory": "Commission & Compensation Protection",
+    "jurisdiction": "General / National",
+    "rating": "thumbs_up",
+    "feedbackReason": null,
+    "feedbackComment": null,
+    "ratedAt": "2026-09-10T15:13:00.377Z",
+    "flaggedForReview": false,
+    "flagReason": null,
+    "flagLabel": null,
+    "reviewed": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "adminNotes": ""
+  }
+]
