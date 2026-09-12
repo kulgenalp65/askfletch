@@ -60,12 +60,16 @@ export function saveUsers(users) {
 export function loadSettings() {
   try {
     if (!fs.existsSync(SETTINGS_FILE)) {
-      return { requireLogin: false };
+      return { requireLogin: false, restrictLiveEditing: false };
     }
     const raw = fs.readFileSync(SETTINGS_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return {
+      requireLogin: Boolean(parsed.requireLogin),
+      restrictLiveEditing: Boolean(parsed.restrictLiveEditing)
+    };
   } catch (err) {
-    return { requireLogin: false };
+    return { requireLogin: false, restrictLiveEditing: false };
   }
 }
 

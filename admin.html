@@ -1245,7 +1245,14 @@
           <input type="text" id="testQuery" class="search-input" style="max-width:none;" placeholder="e.g., Why do builders refuse to cut base prices? What is the registration rule?" onkeydown="if(event.key==='Enter') runTestQuery()">
           <button class="btn" id="testBtn" onclick="runTestQuery()">Ask Fletch</button>
         </div>
-        <div style="background:#fff; border:1px solid var(--line); border-left:3px solid var(--brass); border-radius:var(--radius); padding:14px 18px; font-size:14px; line-height:1.6; min-height:70px; color:var(--charcoal); white-space:pre-wrap;" id="testResponse">Answers from Ask Fletch will appear here, demonstrating how David Fletcher's persona responds using your active source materials.</div>
+        <div style="position:relative;">
+          <div style="background:#fff; border:1px solid var(--line); border-left:3px solid var(--brass); border-radius:var(--radius); padding:14px 18px; padding-right:110px; font-size:14px; line-height:1.6; min-height:70px; color:var(--charcoal); white-space:pre-wrap;" id="testResponse">Answers from Ask Fletch will appear here, demonstrating how David Fletcher's persona responds using your active source materials.</div>
+          <button type="button" id="copyTestResponseBtn" onclick="copyAdminTestResponse()" style="display:none; position:absolute; top:12px; right:12px; background:var(--sand); border:1px solid var(--line); border-radius:var(--radius); padding:5px 9px; font-size:12px; font-weight:500; color:var(--ink-soft); cursor:pointer; align-items:center; gap:5px; font-family:'IBM Plex Sans',sans-serif; line-height:1;" title="Copy answer to clipboard">
+            <svg class="copy-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <svg class="check-icon" style="display:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="copy-label">Copy Answer</span>
+          </button>
+        </div>
       </div>
     </section>
   </div>
@@ -1277,24 +1284,37 @@
       </div>
     </div>
 
-    <!-- Site Access Control Policy Card -->
+    <!-- Site Access & Editing Policy Card -->
     <div class="access-policy-card">
       <div class="access-policy-info">
-        <h3>
+        <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Ask Fletch Website Access Policy
+          Site Access &amp; Editing Policy
           <span class="status-tag active" id="policyModeBadge">Open Access</span>
+          <span class="status-tag" id="editingPolicyBadge" style="background:#E3F2FD;color:#0D47A1;">Live &amp; Build Editing</span>
         </h3>
         <p>
-          Enforce user sign-in before agents can ask David Fletcher coaching questions. When login is required, only accounts created and active in this admin console can access the Ask Fletch chat. Suspended accounts are immediately blocked.
+          Enforce user sign-in before agents can ask David Fletcher coaching questions, and control whether content/design edits can be saved from the live web app or restricted strictly to Google AI Studio Build Mode to prevent divergence.
         </p>
       </div>
-      <div class="access-switch-box">
-        <span style="font-size:13px;font-weight:600;color:var(--ink);" id="policyToggleLabel">Require User Login</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="requireLoginToggle" onchange="toggleSitePolicy(this.checked)">
-          <span class="slider"></span>
-        </label>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="access-switch-box" style="justify-content:space-between;gap:16px;">
+          <span style="font-size:13px;font-weight:600;color:var(--ink);" id="policyToggleLabel">Require User Sign-In</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="requireLoginToggle" onchange="toggleSitePolicy(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="access-switch-box" style="justify-content:space-between;gap:16px;">
+          <div>
+            <span style="font-size:13px;font-weight:600;color:var(--ink);">Restrict Editing to Build Mode</span>
+            <div style="font-size:11px;color:var(--slate);">Locks live web app editing</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="restrictEditingToggle" onchange="toggleRestrictEditing(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -1304,6 +1324,11 @@
         <div>
           <h2>User Accounts &amp; Permissions</h2>
           <p>Create other administrators or agent accounts, manage access status, and reset passwords.</p>
+          <div style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;background:rgba(46,125,50,0.08);border:1px solid rgba(46,125,50,0.22);padding:4px 10px;border-radius:6px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#2e7d32;display:inline-block;box-shadow:0 0 5px rgba(46,125,50,0.6);"></span>
+            <span style="font-size:12px;font-weight:600;color:#1b5e20;">Firebase Auth &amp; Firestore Connected</span>
+            <span style="font-size:11px;color:var(--slate);">• gen-lang-client-0746419325</span>
+          </div>
         </div>
         <button class="btn" onclick="openCreateUserModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1446,16 +1471,24 @@
     <!-- Google AI Studio Build Sync Status Card -->
     <div class="access-policy-card" style="border-left:4px solid var(--brass);">
       <div class="access-policy-info">
-        <h3 style="display:flex;align-items:center;gap:10px;">
+        <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          Google AI Studio Build Synchronization
-          <span class="status-tag active" style="background:#E8F5E9;color:#2E7D32;">Build-Side Synced</span>
+          Google AI Studio &amp; Cloud Firestore Synchronization
+          <span class="status-tag" id="envModeBadge" style="background:#E3F2FD;color:#0D47A1;font-weight:600;">Detecting Environment...</span>
+          <span class="status-tag active" style="background:#E8F5E9;color:#2E7D32;">⚡ Cloud Firestore Connected</span>
         </h3>
-        <p>
-          Updates made here or through the home page live editor are automatically committed directly to the codebase files (<code>index.html</code>, <code>metadata.json</code>, and <code>data/site-content.json</code>). Changes appear immediately both on the web app and on the build side in Google AI Studio.
+        <p id="envModeDescription">
+          Ask Fletch synchronizes site content, design configurations, and knowledge sources with Firebase Cloud Firestore. Edits are saved to the cloud, and clicking <strong>Force Sync Codebase</strong> or <strong>Pull Latest from Cloud</strong> ensures local build files (<code>index.html</code>, <code>metadata.json</code>, and <code>data/site-content.json</code>) are fully updated.
         </p>
+        <div id="liveEditLockedBanner" style="display:none;margin-top:14px;padding:12px 16px;background:#FFF3E0;border:1px solid #FFE0B2;border-radius:6px;font-size:13px;color:#E65100;">
+          <strong>🔒 Live Editing Locked:</strong> Content editing on the live web app is disabled by the current policy to avoid build desynchronization. Please switch to Google AI Studio Build Mode to make edits, or turn off "Restrict Editing to Build Mode" in the Site Access &amp; Editing Policy card above.
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button type="button" class="btn secondary" onclick="forceSyncCodebase()" style="font-size:13px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Sync with Codebase
+        </button>
         <a href="/" target="_blank" class="btn secondary" style="font-size:13px;padding:8px 14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           View Live Home Page
@@ -1731,9 +1764,15 @@
           <div style="font-size:11.5px; color:var(--slate);">Document the specific coaching correction or knowledge base update made.</div>
         </div>
 
-        <div style="display:flex; align-items:center; gap:8px; margin-top:6px; padding:8px 12px; background:var(--sand); border-radius:4px;">
-          <input type="checkbox" id="modalReviewedCheck" style="width:16px; height:16px; cursor:pointer;">
-          <label for="modalReviewedCheck" style="font-size:13px; font-weight:500; color:var(--ink); cursor:pointer;">Mark this interaction as Reviewed</label>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px; padding:8px 12px; background:var(--sand); border-radius:4px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="modalReviewedCheck" style="width:16px; height:16px; cursor:pointer;">
+            <label for="modalReviewedCheck" style="font-size:13px; font-weight:500; color:var(--ink); cursor:pointer;">Mark this interaction as Reviewed</label>
+          </div>
+          <button type="button" class="sm-btn" onclick="openEditAnswerModalFromReview()" style="display:inline-flex; align-items:center; gap:5px; background:#FFFDE7; border-color:#FFE082; color:#5D4037; font-weight:600;" title="Edit this answer and add to knowledge base">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Answer &amp; Add to KB
+          </button>
         </div>
 
       </div>
@@ -1742,6 +1781,95 @@
         <button type="submit" class="btn" id="saveReviewBtn">Save Maintainer Notes</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Chatbot Answer & Add to Knowledge Base -->
+<div class="modal-overlay hidden" id="editAnswerModal">
+  <div class="modal-content" style="max-width:720px; max-height:92vh; display:flex; flex-direction:column;">
+    <div class="modal-head" style="flex-shrink:0;">
+      <div>
+        <h3 style="margin:0; font-size:16px; color:var(--ink);">Edit Coaching Answer &amp; Add to Knowledge Base</h3>
+        <div style="font-size:12px; color:var(--slate); margin-top:2px;">Revise Ask Fletch's answer to guarantee coaching accuracy, and automatically add it to your knowledge base as an active text document.</div>
+      </div>
+      <button type="button" class="sm-btn" onclick="closeEditAnswerModal()">✕</button>
+    </div>
+    
+    <div class="modal-body" style="overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
+      <input type="hidden" id="editAnswerInteractionId">
+      
+      <!-- Question Box -->
+      <div>
+        <label style="font-size:11px; font-weight:700; color:var(--slate); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Agent Question</label>
+        <div id="editAnswerQuestionText" style="font-weight:600; color:var(--ink); font-size:13.5px; background:var(--sand); border:1px solid var(--line); border-radius:4px; padding:10px 14px; line-height:1.5;"></div>
+      </div>
+
+      <!-- Original Answer reference with toggle -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <label style="font-size:11px; font-weight:700; color:var(--slate); text-transform:uppercase; letter-spacing:0.5px;">Original Chatbot Output</label>
+          <button type="button" class="sm-btn" onclick="toggleOriginalAnswerPreview()" style="font-size:11px; padding:2px 8px;">
+            <span id="toggleOriginalModalBtnText">Show Original Output</span>
+          </button>
+        </div>
+        <div id="editAnswerOriginalBox" style="display:none; max-height:130px; overflow-y:auto; font-size:12.5px; color:var(--charcoal); background:#fff; border:1px dashed var(--line); border-radius:4px; padding:10px 12px; line-height:1.5; white-space:pre-wrap;"></div>
+      </div>
+
+      <!-- Revised / Approved Answer Textarea -->
+      <div class="form-group" style="margin:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <label style="font-size:12px; font-weight:700; color:var(--ink);">Approved / Revised Coaching Answer (David Fletcher Persona)</label>
+          <span id="revisedAnswerWordCount" style="font-size:11.5px; color:var(--slate);">0 words</span>
+        </div>
+        <textarea id="editAnswerRevisedText" required style="min-height:170px; width:100%; box-sizing:border-box; padding:12px 14px; font-size:13px; font-family:'IBM Plex Sans', sans-serif; line-height:1.6; border:1px solid var(--line); border-radius:var(--radius); resize:vertical;" placeholder="Enter the authoritative, corrected answer in David Fletcher's voice..." oninput="updateRevisedWordCount()"></textarea>
+        <div style="font-size:11.5px; color:var(--slate); margin-top:3px;">This authoritative answer replaces the previous response in Ask Fletch logs.</div>
+      </div>
+
+      <!-- Knowledge Base Auto-Add Option -->
+      <div style="background:#FAF8F5; border:1px solid #E2D7C5; border-left:3px solid var(--brass); border-radius:4px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <input type="checkbox" id="editAnswerAddToKbCheck" checked style="width:17px; height:17px; cursor:pointer; margin-top:2px;" onchange="toggleKbOptions(this.checked)">
+          <div>
+            <label for="editAnswerAddToKbCheck" style="font-size:13px; font-weight:700; color:var(--ink); cursor:pointer;">
+              Automatically add this revised answer to Knowledge Base as a text document (.txt)
+            </label>
+            <div style="font-size:12px; color:var(--slate); margin-top:2px; line-height:1.4;">
+              Creates an active <code>.txt</code> source document in your Knowledge Base and syncs to Cloud Firestore so the AI grounds all future coaching queries with this approved answer.
+            </div>
+          </div>
+        </div>
+
+        <div id="editAnswerKbFields" style="display:flex; flex-direction:column; gap:6px; padding-left:27px;">
+          <label style="font-size:11.5px; font-weight:600; color:var(--ink-soft);">Knowledge Base Document File Name</label>
+          <input type="text" id="editAnswerDocName" class="search-input" style="max-width:none; font-size:12.5px;" placeholder="David Fletcher Coaching - Topic.txt">
+          <div style="font-size:11px; color:var(--slate);">Will be saved as an active text document (.txt) in Knowledge Base sources.</div>
+        </div>
+      </div>
+
+      <!-- Optional Maintainer Note -->
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px; font-weight:600; color:var(--ink-soft);">Maintainer Review Note (Optional)</label>
+        <input type="text" id="editAnswerAdminNotes" class="search-input" style="max-width:none; font-size:12.5px;" placeholder="e.g., Clarified 30-day builder registration rules for Florida; added procuring cause script">
+      </div>
+
+      <!-- Reviewed Checkbox -->
+      <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--sand); border-radius:4px;">
+        <input type="checkbox" id="editAnswerReviewedCheck" checked style="width:16px; height:16px; cursor:pointer;">
+        <label for="editAnswerReviewedCheck" style="font-size:12.5px; font-weight:500; color:var(--ink); cursor:pointer;">Mark this interaction as Reviewed</label>
+      </div>
+
+    </div>
+
+    <div class="modal-foot" style="flex-shrink:0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <button type="button" class="btn secondary" onclick="closeEditAnswerModal()">Cancel</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn secondary" id="saveRevisionOnlyBtn" onclick="submitAnswerRevision(false)" style="font-size:12.5px;">Save Revision Only</button>
+        <button type="button" class="btn" id="saveAndAddToKbBtn" onclick="submitAnswerRevision(true)" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+          Save &amp; Add to Knowledge Base
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1868,6 +1996,24 @@
   </div>
 </div>
 
+<!-- In-App Action Confirmation Modal (Iframe-safe) -->
+<div class="modal-overlay hidden" id="actionConfirmModal">
+  <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-head">
+      <h3 id="actionConfirmTitle" style="margin:0; font-size:18px;">Confirm Action</h3>
+      <button class="sm-btn" type="button" onclick="closeActionConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding: 20px; font-size: 13.5px; line-height: 1.5; color: var(--charcoal);">
+      <p id="actionConfirmMessage" style="margin: 0 0 12px 0;"></p>
+      <div id="actionConfirmSubnote" style="font-size: 12px; color: var(--slate); background: var(--sand); padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);"></div>
+    </div>
+    <div class="modal-foot" style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); background: #fff;">
+      <button type="button" class="btn secondary" id="actionCancelBtn" onclick="closeActionConfirmModal()">Cancel</button>
+      <button type="button" class="btn" id="actionConfirmBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast">Changes saved</div>
 
@@ -1899,10 +2045,70 @@
 
   function escapeHtml(str){
     if(!str) return "";
-    const d = document.createElement("div");
-    d.textContent = str;
-    return d.innerHTML;
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
+
+  // -------------------------------------------------------------
+  // In-App Modal Dialog Confirmation (Replaces iframe-blocked confirm())
+  // -------------------------------------------------------------
+  let activeConfirmAction = null;
+
+  function showConfirmModal({ title, message, subnote, confirmText = "Confirm", isDanger = false, onConfirm }){
+    const titleEl = el("actionConfirmTitle");
+    titleEl.textContent = title || "Confirm Action";
+    titleEl.style.color = isDanger ? "var(--danger)" : "var(--ink)";
+    el("actionConfirmMessage").innerHTML = message || "Are you sure you want to proceed?";
+    
+    const subnoteEl = el("actionConfirmSubnote");
+    if(subnote){
+      subnoteEl.style.display = "block";
+      subnoteEl.textContent = subnote;
+    } else {
+      subnoteEl.style.display = "none";
+    }
+
+    const confirmBtn = el("actionConfirmBtn");
+    confirmBtn.textContent = confirmText;
+    if(isDanger){
+      confirmBtn.className = "btn danger";
+      confirmBtn.style.background = "var(--danger)";
+      confirmBtn.style.borderColor = "var(--danger)";
+      confirmBtn.style.color = "#fff";
+    } else {
+      confirmBtn.className = "btn";
+      confirmBtn.style.background = "var(--ink)";
+      confirmBtn.style.borderColor = "var(--ink)";
+      confirmBtn.style.color = "var(--paper)";
+    }
+
+    activeConfirmAction = onConfirm;
+    el("actionConfirmModal").classList.remove("hidden");
+  }
+
+  function closeActionConfirmModal(){
+    el("actionConfirmModal").classList.add("hidden");
+    activeConfirmAction = null;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const confirmBtn = el("actionConfirmBtn");
+    if(confirmBtn){
+      confirmBtn.addEventListener("click", async () => {
+        if(typeof activeConfirmAction === "function"){
+          const fn = activeConfirmAction;
+          closeActionConfirmModal();
+          await fn();
+        } else {
+          closeActionConfirmModal();
+        }
+      });
+    }
+  });
 
   // -------------------------------------------------------------
   // Authenticated Fetch Wrapper
@@ -2062,6 +2268,7 @@
   }
 
   function loadDashboardData(){
+    checkEnvironment();
     fetchStats();
     fetchSources();
     fetchUsers();
@@ -2289,17 +2496,23 @@
 
   async function forceSyncCodebase(){
     try {
-      showToast("Syncing all codebase files (index.html, metadata.json, data/)...");
+      showToast("Syncing with Cloud Firestore and local codebase files...");
       const res = await adminFetch("/api/site-content/sync", { method: "POST" });
       const data = await res.json();
       if(!res.ok){
         throw new Error(data.error || "Sync failed");
       }
+      if(data.siteContent){
+        adminSiteContent = data.siteContent;
+        populateAdminDesignForm(adminSiteContent);
+      }
+      fetchSources();
+      fetchSettings();
       if(syncChannel){
         syncChannel.postMessage({ type: "SITE_CONTENT_UPDATED", siteContent: data.siteContent });
       }
       localStorage.setItem("askfletch_site_sync", Date.now().toString());
-      showToast("✓ All codebase files (index.html, metadata.json, ask-fletch.html) successfully synced!");
+      showToast("✓ All codebase files (index.html, metadata.json, ask-fletch.html) & Cloud Firestore successfully synced!");
     } catch(err){
       console.error("Force sync error:", err);
       showToast("Sync error: " + err.message);
@@ -2509,34 +2722,79 @@
     }
   }
 
-  async function resetSiteContentFromAdmin(){
-    if(!confirm("Reset all text and design changes back to original defaults? This will update index.html and metadata.json as well.")) return;
+  function resetSiteContentFromAdmin(){
+    showConfirmModal({
+      title: "Reset Site Content & Design",
+      message: "Reset all text and design changes back to original defaults?",
+      subnote: "This will update index.html, metadata.json, and site configuration.",
+      confirmText: "Reset Defaults",
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          const res = await adminFetch("/api/site-content/reset", {
+            method: "POST"
+          });
+          const data = await res.json();
+          if(!res.ok){
+            throw new Error(data.error || "Failed to reset");
+          }
+          adminSiteContent = data.siteContent;
+          populateAdminDesignForm(adminSiteContent);
 
-    try {
-      const res = await adminFetch("/api/site-content/reset", {
-        method: "POST"
-      });
-      const data = await res.json();
-      if(!res.ok){
-        throw new Error(data.error || "Failed to reset");
+          if(syncChannel){
+            syncChannel.postMessage({ type: "SITE_CONTENT_UPDATED", siteContent: adminSiteContent });
+          }
+          localStorage.setItem("askfletch_site_sync", Date.now().toString());
+
+          showToast("✓ Reset complete! Default settings restored across all build files.");
+        } catch(err){
+          showToast("Error resetting: " + err.message);
+        }
       }
-      adminSiteContent = data.siteContent;
-      populateAdminDesignForm(adminSiteContent);
-
-      if(syncChannel){
-        syncChannel.postMessage({ type: "SITE_CONTENT_UPDATED", siteContent: adminSiteContent });
-      }
-      localStorage.setItem("askfletch_site_sync", Date.now().toString());
-
-      showToast("✓ Reset complete! Default settings restored across all build files.");
-    } catch(err){
-      showToast("Error resetting: " + err.message);
-    }
+    });
   }
 
   // -------------------------------------------------------------
-  // Site Access Policy Management
+  // Site Access & Editing Policy Management
   // -------------------------------------------------------------
+  let isBuildEnvironment = window.location.hostname.includes('ais-dev') || 
+                           window.location.hostname.includes('localhost') || 
+                           window.location.hostname.includes('127.0.0.1');
+
+  async function checkEnvironment(){
+    try {
+      const res = await fetch("/api/admin/environment");
+      if(res.ok){
+        const env = await res.json();
+        isBuildEnvironment = env.isBuildMode;
+        const envBadge = el("envModeBadge");
+        const envDesc = el("envModeDescription");
+
+        if(envBadge){
+          if(isBuildEnvironment){
+            envBadge.style.background = "#E8F5E9";
+            envBadge.style.color = "#2E7D32";
+            envBadge.textContent = "🛠️ Google AI Studio Build Mode";
+          } else {
+            envBadge.style.background = "#E3F2FD";
+            envBadge.style.color = "#0D47A1";
+            envBadge.textContent = "🌐 Live Web App (Deployed)";
+          }
+        }
+        if(envDesc){
+          if(isBuildEnvironment){
+            envDesc.innerHTML = `You are currently in <strong>Google AI Studio Build Mode</strong>. Changes made here are saved to the codebase files (<code>index.html</code>, <code>metadata.json</code>, and <code>data/</code>) and Cloud Firestore.`;
+          } else {
+            envDesc.innerHTML = `You are currently on the <strong>Live Web App</strong>. Changes made here synchronize directly with Cloud Firestore. To keep your Google AI Studio preview build up to date, use <strong>Sync with Codebase</strong>.`;
+          }
+        }
+        updateEditingLockState();
+      }
+    } catch(err) {
+      console.warn("Could not check environment:", err);
+    }
+  }
+
   async function fetchSettings(){
     try {
       const res = await adminFetch("/api/admin/settings");
@@ -2549,11 +2807,39 @@
     }
   }
 
+  function updateEditingLockState(){
+    const isRestricted = Boolean(siteSettings.restrictLiveEditing);
+    const lockedOnLive = isRestricted && !isBuildEnvironment;
+    const banner = el("liveEditLockedBanner");
+    const saveBtn = el("saveSiteContentAdminBtn");
+
+    if(banner){
+      banner.style.display = lockedOnLive ? "block" : "none";
+    }
+
+    // Toggle disabled state on inputs in the Design tab if locked
+    const inputs = document.querySelectorAll("#sectionDesign input, #sectionDesign textarea, #sectionDesign select");
+    inputs.forEach(inp => {
+      if(inp.id !== "restrictEditingToggle" && inp.id !== "requireLoginToggle"){
+        inp.disabled = lockedOnLive;
+      }
+    });
+
+    if(saveBtn){
+      saveBtn.disabled = lockedOnLive;
+      if(lockedOnLive){
+        saveBtn.title = "Editing is restricted to Google AI Studio Build Mode by current policy";
+      } else {
+        saveBtn.title = "Save changes to Cloud Firestore and codebase";
+      }
+    }
+  }
+
   function updatePolicyUI(){
     const toggle = el("requireLoginToggle");
     const badge = el("policyModeBadge");
     const isRequired = Boolean(siteSettings.requireLogin);
-    toggle.checked = isRequired;
+    if(toggle) toggle.checked = isRequired;
 
     if(isRequired){
       badge.className = "status-tag suspended";
@@ -2562,6 +2848,25 @@
       badge.className = "status-tag active";
       badge.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span> Open Access (Public)`;
     }
+
+    const editToggle = el("restrictEditingToggle");
+    const editBadge = el("editingPolicyBadge");
+    const isRestricted = Boolean(siteSettings.restrictLiveEditing);
+    if(editToggle) editToggle.checked = isRestricted;
+
+    if(editBadge){
+      if(isRestricted){
+        editBadge.style.background = "#FFF3E0";
+        editBadge.style.color = "#E65100";
+        editBadge.textContent = "Build-Mode Only (Live Locked)";
+      } else {
+        editBadge.style.background = "#E3F2FD";
+        editBadge.style.color = "#0D47A1";
+        editBadge.textContent = "Live & Build Editing";
+      }
+    }
+
+    updateEditingLockState();
   }
 
   async function toggleSitePolicy(requireLogin){
@@ -2578,6 +2883,24 @@
       }
     } catch(err){
       alert("Failed to update access policy: " + err.message);
+      fetchSettings();
+    }
+  }
+
+  async function toggleRestrictEditing(restrictLiveEditing){
+    try {
+      const res = await adminFetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restrictLiveEditing })
+      });
+      if(res.ok){
+        siteSettings = await res.json();
+        updatePolicyUI();
+        showToast(restrictLiveEditing ? "Live editing locked: content can only be edited in Google AI Studio Build Mode" : "Live editing enabled: content can be edited in the live web app");
+      }
+    } catch(err){
+      alert("Failed to update editing restriction: " + err.message);
       fetchSettings();
     }
   }
@@ -2676,7 +2999,7 @@
               ` : ''}
               <button class="sm-btn" onclick="openEditUserModal('${u.id}')">Edit</button>
               ${!isSelf ? `
-                <button class="sm-btn danger" onclick="deleteUser('${u.id}', '${escapeHtml(u.email)}')">Delete</button>
+                <button class="sm-btn danger" type="button" data-id="${escapeHtml(u.id)}" data-email="${escapeHtml(u.email)}" onclick="deleteUser(this.getAttribute('data-id'), this.getAttribute('data-email'))">Delete</button>
               ` : ''}
             </div>
           </td>
@@ -2820,20 +3143,30 @@
   }
 
   // Delete User
-  async function deleteUser(userId, email){
-    if(!confirm(`Are you sure you want to permanently delete the user account for ${email}?`)) return;
-
-    try {
-      const res = await adminFetch(`/api/admin/users/${userId}`, {
-        method: "DELETE"
-      });
-      if(res.ok){
-        showToast(`Deleted user ${email}`);
-        fetchUsers();
+  function deleteUser(userId, email){
+    showConfirmModal({
+      title: "Delete User Account",
+      message: `Are you sure you want to permanently delete the account for <strong style="color:var(--ink);">${escapeHtml(email)}</strong>?`,
+      subnote: "The user will lose access to Ask Fletch coaching immediately.",
+      confirmText: "Delete Account",
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          const res = await adminFetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+            method: "DELETE"
+          });
+          if(res.ok){
+            showToast(`Deleted user ${email}`);
+            fetchUsers();
+          } else {
+            const err = await res.json().catch(() => ({}));
+            showToast("Failed to delete user: " + (err.error || res.statusText));
+          }
+        } catch(err){
+          showToast("Failed to delete user: " + err.message);
+        }
       }
-    } catch(err){
-      alert("Failed to delete user: " + err.message);
-    }
+    });
   }
 
   function generateRandomPassword(targetInputId){
@@ -3125,7 +3458,7 @@
         <tr>
           <td>
             <label class="toggle-switch">
-              <input type="checkbox" ${doc.active ? 'checked' : ''} onchange="toggleDocActive('${doc.id}', this.checked)">
+              <input type="checkbox" ${doc.active ? 'checked' : ''} data-id="${escapeHtml(doc.id)}" onchange="toggleDocActive(this.getAttribute('data-id'), this.checked)">
               <span class="slider"></span>
             </label>
           </td>
@@ -3137,8 +3470,8 @@
           <td style="color:var(--slate);font-size:12px;">${dateStr}</td>
           <td style="text-align:right;">
             <div class="action-btns" style="justify-content:flex-end;">
-              <button class="sm-btn" onclick="previewDoc('${doc.id}')">Preview</button>
-              <button class="sm-btn danger" onclick="deleteDoc('${doc.id}', '${escapeHtml(doc.name)}')">Delete</button>
+              <button type="button" class="sm-btn" data-id="${escapeHtml(doc.id)}" onclick="previewDoc(this.getAttribute('data-id'))">Preview</button>
+              <button type="button" class="sm-btn danger" data-id="${escapeHtml(doc.id)}" onclick="deleteDoc(this.getAttribute('data-id'))">Delete</button>
             </div>
           </td>
         </tr>
@@ -3148,45 +3481,72 @@
 
   async function toggleDocActive(id, isActive){
     try {
-      const res = await adminFetch(`/api/admin/sources/${id}`, {
+      const res = await adminFetch(`/api/admin/sources/${encodeURIComponent(id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active: isActive })
       });
       if(res.ok){
         showToast(`Document ${isActive ? 'enabled' : 'disabled'}`);
+        const target = allDocs.find(d => d.id === id);
+        if(target) target.active = isActive;
+        localStorage.setItem("askfletch_persistent_sources", JSON.stringify(allDocs));
         fetchStats();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast("Failed to toggle status: " + (err.error || res.statusText));
+        fetchSources();
       }
     } catch(e) {
-      alert("Failed to toggle status: " + e.message);
+      showToast("Failed to toggle status: " + e.message);
+      fetchSources();
     }
   }
 
-  async function deleteDoc(id, name){
-    if(!confirm(`Are you sure you want to delete "${name}" from the knowledge base?`)) return;
-    try {
-      const res = await adminFetch(`/api/admin/sources/${id}`, { method: "DELETE" });
-      if(res.ok){
-        showToast(`Deleted ${name}`);
-        fetchSources();
-        fetchStats();
+  function deleteDoc(id){
+    const doc = allDocs.find(d => d.id === id);
+    const docName = doc ? doc.name : "this document";
+
+    showConfirmModal({
+      title: "Delete Source Document",
+      message: `Are you sure you want to delete <strong style="color:var(--ink);">${escapeHtml(docName)}</strong> from the knowledge base?`,
+      subnote: "This document will be permanently removed from coaching context.",
+      confirmText: "Delete Document",
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          const res = await adminFetch(`/api/admin/sources/${encodeURIComponent(id)}`, { method: "DELETE" });
+          if(res.ok){
+            showToast(`Deleted "${docName}"`);
+            allDocs = allDocs.filter(d => d.id !== id);
+            localStorage.setItem("askfletch_persistent_sources", JSON.stringify(allDocs));
+            fetchSources();
+            fetchStats();
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            showToast("Failed to delete document: " + (errData.error || res.statusText));
+          }
+        } catch(e){
+          showToast("Failed to delete document: " + e.message);
+        }
       }
-    } catch(e){
-      alert("Failed to delete document: " + e.message);
-    }
+    });
   }
 
   async function previewDoc(id){
     try {
-      const res = await adminFetch(`/api/admin/sources/${id}`);
+      const res = await adminFetch(`/api/admin/sources/${encodeURIComponent(id)}`);
       if(res.ok){
         const doc = await res.json();
         el("modalDocTitle").textContent = doc.name;
         el("modalDocBody").textContent = doc.text;
         el("previewModal").classList.remove("hidden");
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast("Could not load document: " + (err.error || res.statusText));
       }
     } catch(e){
-      alert("Could not load document text: " + e.message);
+      showToast("Could not load document text: " + e.message);
     }
   }
 
@@ -3205,6 +3565,7 @@
 
     el("testBtn").disabled = true;
     el("testResponse").textContent = "Consulting active source documents...";
+    if(el("copyTestResponseBtn")) el("copyTestResponseBtn").style.display = "none";
 
     try {
       const res = await adminFetch("/api/chat", {
@@ -3220,10 +3581,59 @@
 
       const data = await res.json();
       el("testResponse").textContent = data.text;
+      if(el("copyTestResponseBtn")) el("copyTestResponseBtn").style.display = "inline-flex";
     } catch(err) {
       el("testResponse").textContent = `Error: ${err.message}`;
     } finally {
       el("testBtn").disabled = false;
+    }
+  }
+
+  async function copyAdminTestResponse(){
+    const text = el("testResponse").textContent;
+    if(!text) return;
+    const btn = el("copyTestResponseBtn");
+
+    let success = false;
+    if(navigator.clipboard && window.isSecureContext){
+      try {
+        await navigator.clipboard.writeText(text);
+        success = true;
+      } catch(e){}
+    }
+    if(!success){
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        success = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch(e){}
+    }
+
+    if(success && btn){
+      btn.style.background = "#E8F5E9";
+      btn.style.color = "#2E7D32";
+      btn.style.borderColor = "#81C784";
+      const lbl = btn.querySelector(".copy-label");
+      const cIcon = btn.querySelector(".copy-icon");
+      const kIcon = btn.querySelector(".check-icon");
+      if(lbl) lbl.textContent = "Copied!";
+      if(cIcon) cIcon.style.display = "none";
+      if(kIcon) kIcon.style.display = "inline-block";
+      showToast("✓ Coaching answer copied to clipboard!");
+
+      setTimeout(() => {
+        btn.style.background = "var(--sand)";
+        btn.style.color = "var(--ink-soft)";
+        btn.style.borderColor = "var(--line)";
+        if(lbl) lbl.textContent = "Copy Answer";
+        if(cIcon) cIcon.style.display = "inline-block";
+        if(kIcon) kIcon.style.display = "none";
+      }, 2000);
     }
   }
 
@@ -3423,25 +3833,41 @@
         reviewBadge = '<span class="status-tag suspended">Pending Review</span>';
       }
 
+      let revisedBadge = '';
+      if(item.isRevised){
+        revisedBadge = '<span class="status-tag" style="background:#E8F5E9; color:#2E7D32; font-weight:600;" title="Coaching answer was edited and approved by an administrator">✨ Answer Revised</span>';
+      }
+
+      let kbBadge = '';
+      if(item.knowledgeDocId){
+        kbBadge = `<span class="status-tag" style="background:#E3F2FD; color:#1565C0; font-weight:600;" title="Added to Knowledge Base as ${escapeHtml(item.knowledgeDocName || '')}">📚 in KB</span>`;
+      }
+
       const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Unknown';
 
       return `
         <div class="interaction-card ${item.flaggedForReview ? 'flagged' : ''} ${item.reviewed ? 'reviewed-card' : ''}">
           <div class="interaction-top-row">
-            <div class="interaction-meta">
+            <div class="interaction-meta" style="flex-wrap:wrap;">
               <span style="font-weight:600; color:var(--ink);">${escapeHtml(item.userEmail || 'Anonymous Agent')}</span>
               <span>•</span>
               <span>${dateStr}</span>
               <span>•</span>
               ${ratingBadge}
               ${reviewBadge}
+              ${revisedBadge}
+              ${kbBadge}
               ${item.flaggedForReview ? `
                 <span class="flag-badge" title="${escapeHtml(item.flagLabel || '')}">
                   ⚠️ ${escapeHtml(item.flagReason === 'knowledge_gap' ? 'Knowledge Gap' : (item.flagReason === 'frequently_changing_topic' ? 'Volatile Market Topic' : 'Uncertainty Flag'))}
                 </span>
               ` : ''}
             </div>
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+              <button class="sm-btn" onclick="openEditAnswerModal('${item.id}')" style="display:inline-flex; align-items:center; gap:4px; font-weight:600; background:#FFFDE7; border-color:#FFE082; color:#5D4037;" title="Edit chatbot answer and optionally upload to knowledge base">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit Answer
+              </button>
               <button class="sm-btn" onclick="openReviewModal('${item.id}')">Maintainer Notes</button>
               <button class="sm-btn" onclick="toggleInteractionReviewed('${item.id}')" title="Toggle review status">
                 ${item.reviewed ? 'Mark Unreviewed' : '✓ Mark Reviewed'}
@@ -3456,7 +3882,28 @@
 
           <div class="qa-question">Q: ${escapeHtml(item.question)}</div>
 
-          <div class="qa-answer">${escapeHtml(item.answer)}</div>
+          ${item.isRevised ? `
+            <div class="qa-answer" style="border:1px solid #C8E6C9; border-left:4px solid #2E7D32; background:#F7FCF7; padding:12px 14px;">
+              <div style="font-size:11px; font-weight:700; color:#2E7D32; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                <span>Approved / Revised Answer (David Fletcher Persona)</span>
+                <span style="font-size:11px; font-weight:normal; color:var(--slate);">by ${escapeHtml(item.revisedBy || 'Maintainer')}${item.revisedAt ? ' • ' + new Date(item.revisedAt).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : ''}</span>
+              </div>
+              <div style="white-space:pre-wrap;">${escapeHtml(item.answer)}</div>
+            </div>
+            ${item.originalAnswer ? `
+              <div style="margin-top:6px;">
+                <button type="button" class="sm-btn" onclick="toggleOriginalCardAnswer('${item.id}')" style="font-size:11px; padding:2px 8px; color:var(--slate);">
+                  <span id="toggleText_${item.id}">View Original Chatbot Output</span>
+                </button>
+                <div id="originalAnswerCard_${item.id}" style="display:none; margin-top:6px; padding:8px 12px; background:#F8FAFC; border:1px dashed var(--line); border-radius:4px; font-size:12.5px; color:var(--charcoal); line-height:1.5; white-space:pre-wrap;">
+                  <strong style="font-size:11px; text-transform:uppercase; color:var(--slate); display:block; margin-bottom:2px;">Original Unedited Output:</strong>
+                  ${escapeHtml(item.originalAnswer)}
+                </div>
+              </div>
+            ` : ''}
+          ` : `
+            <div class="qa-answer">${escapeHtml(item.answer)}</div>
+          `}
 
           ${item.feedbackReason || item.feedbackComment ? `
             <div class="feedback-reason-box">
@@ -3473,8 +3920,23 @@
             </div>
           ` : ''}
 
-          <div style="font-size:11.5px; color:var(--slate); margin-top:8px;">
-            Sources used: ${item.sourcesUsed && item.sourcesUsed.length > 0 ? escapeHtml(item.sourcesUsed.join(', ')) : 'Default Coaching Principles'}
+          <div style="font-size:11.5px; color:var(--slate); margin-top:10px; padding-top:10px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              Sources used: ${item.sourcesUsed && item.sourcesUsed.length > 0 ? escapeHtml(item.sourcesUsed.join(', ')) : 'Default Coaching Principles'}
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              ${item.knowledgeDocId ? `
+                <span style="display:inline-flex; align-items:center; gap:5px; background:#E8F5E9; color:#1B5E20; border:1px solid #C8E6C9; border-radius:4px; padding:3px 8px; font-size:11.5px; font-weight:600;">
+                  📚 Added to Knowledge Base: <span style="font-weight:normal; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.knowledgeDocName || '')}">${escapeHtml(item.knowledgeDocName || 'Knowledge Base Document')}</span>
+                </span>
+                <button class="sm-btn" onclick="uploadAnswerDirectToKB('${item.id}')" style="font-size:11px; padding:2px 7px;" title="Upload fresh copy or update in knowledge base">Re-upload to KB</button>
+              ` : `
+                <button class="sm-btn" onclick="uploadAnswerDirectToKB('${item.id}')" style="display:inline-flex; align-items:center; gap:5px; background:var(--sand); color:var(--ink); font-weight:600; border-color:var(--brass); font-size:11.5px;" title="Upload this answer directly to the Knowledge Base as a text document (.txt)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  + Upload Answer to Knowledge Base (.txt)
+                </button>
+              `}
+            </div>
           </div>
         </div>
       `;
@@ -3504,6 +3966,199 @@
 
   function closeReviewModal(){
     el("reviewModal").classList.add("hidden");
+  }
+
+  function openEditAnswerModal(id){
+    const item = allInteractions.find(i => i.id === id);
+    if(!item) return;
+
+    el("editAnswerInteractionId").value = item.id;
+    el("editAnswerQuestionText").textContent = item.question;
+    
+    // Original answer box & toggle
+    const origAnswer = item.originalAnswer || item.answer;
+    el("editAnswerOriginalBox").textContent = origAnswer;
+    el("editAnswerOriginalBox").style.display = "none";
+    el("toggleOriginalModalBtnText").textContent = "Show Original Output";
+
+    // Revised answer prefill
+    el("editAnswerRevisedText").value = item.answer || "";
+    updateRevisedWordCount();
+
+    // Default document title
+    const cleanQ = (item.question || 'Coaching QA')
+      .replace(/[^a-zA-Z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 50);
+    el("editAnswerDocName").value = item.knowledgeDocName || `David Fletcher Coaching - ${cleanQ}.txt`;
+
+    // Knowledge base checkbox default
+    el("editAnswerAddToKbCheck").checked = true;
+    toggleKbOptions(true);
+
+    // Maintainer note & review check
+    el("editAnswerAdminNotes").value = item.adminNotes || "";
+    el("editAnswerReviewedCheck").checked = true;
+
+    el("editAnswerModal").classList.remove("hidden");
+  }
+
+  function closeEditAnswerModal(){
+    el("editAnswerModal").classList.add("hidden");
+  }
+
+  function openEditAnswerModalFromReview(){
+    const id = el("reviewInteractionId").value;
+    closeReviewModal();
+    if(id){
+      openEditAnswerModal(id);
+    }
+  }
+
+  function toggleOriginalAnswerPreview(){
+    const box = el("editAnswerOriginalBox");
+    const btnText = el("toggleOriginalModalBtnText");
+    if(!box || !btnText) return;
+    const isHidden = box.style.display === "none";
+    box.style.display = isHidden ? "block" : "none";
+    btnText.textContent = isHidden ? "Hide Original Output" : "Show Original Output";
+  }
+
+  function toggleOriginalCardAnswer(id){
+    const box = el(`originalAnswerCard_${id}`);
+    const btn = el(`toggleText_${id}`);
+    if(!box || !btn) return;
+    const isHidden = box.style.display === "none";
+    box.style.display = isHidden ? "block" : "none";
+    btn.textContent = isHidden ? "Hide Original Output" : "View Original Chatbot Output";
+  }
+
+  function updateRevisedWordCount(){
+    const text = el("editAnswerRevisedText") ? el("editAnswerRevisedText").value.trim() : "";
+    const count = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    const countEl = el("revisedAnswerWordCount");
+    if(countEl){
+      countEl.textContent = `${count} word${count === 1 ? '' : 's'}`;
+    }
+  }
+
+  function toggleKbOptions(checked){
+    const fields = el("editAnswerKbFields");
+    if(fields){
+      fields.style.display = checked ? "flex" : "none";
+    }
+  }
+
+  async function submitAnswerRevision(addToKb){
+    const id = el("editAnswerInteractionId").value;
+    const revisedAnswer = el("editAnswerRevisedText").value.trim();
+    if(!revisedAnswer){
+      alert("Please enter the approved/revised answer text.");
+      el("editAnswerRevisedText").focus();
+      return;
+    }
+
+    const adminNotes = el("editAnswerAdminNotes").value.trim();
+    const reviewed = el("editAnswerReviewedCheck").checked;
+    const shouldAddKb = addToKb || el("editAnswerAddToKbCheck").checked;
+    const documentName = el("editAnswerDocName").value.trim();
+
+    const saveBtn = el("saveAndAddToKbBtn");
+    const saveOnlyBtn = el("saveRevisionOnlyBtn");
+    if(saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+    }
+    if(saveOnlyBtn) saveOnlyBtn.disabled = true;
+
+    try {
+      const res = await adminFetch(`/api/admin/feedback/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          revisedAnswer,
+          adminNotes,
+          reviewed,
+          addToKnowledgeBase: shouldAddKb,
+          documentName
+        })
+      });
+
+      if(!res.ok){
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to save answer revision");
+      }
+
+      const updated = await res.json();
+      const idx = allInteractions.findIndex(i => i.id === id);
+      if(idx !== -1){
+        allInteractions[idx] = updated;
+      }
+
+      closeEditAnswerModal();
+
+      if(shouldAddKb && updated.createdDoc){
+        showToast(`Answer revised and uploaded to Knowledge Base as "${updated.createdDoc.name}"!`);
+        await fetchSources();
+      } else {
+        showToast("Coaching answer revision saved successfully");
+      }
+
+      fetchFeedbackData();
+    } catch(err){
+      alert("Error saving answer revision: " + err.message);
+    } finally {
+      if(saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg> Save &amp; Add to Knowledge Base';
+      }
+      if(saveOnlyBtn) saveOnlyBtn.disabled = false;
+    }
+  }
+
+  async function uploadAnswerDirectToKB(id){
+    const item = allInteractions.find(i => i.id === id);
+    if(!item) return;
+
+    const cleanQ = (item.question || 'Coaching QA')
+      .replace(/[^a-zA-Z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 50);
+
+    const defaultName = item.knowledgeDocName || `David Fletcher Coaching - ${cleanQ}.txt`;
+    const docName = prompt("Upload answer to Knowledge Base as a text document (.txt).\n\nEnter file name for the new source document:", defaultName);
+    if(!docName || !docName.trim()) return;
+
+    try {
+      showToast("Uploading answer to Knowledge Base...");
+      const res = await adminFetch(`/api/admin/feedback/${id}/add-to-knowledge-base`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentName: docName.trim(),
+          customText: item.answer
+        })
+      });
+
+      if(!res.ok){
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to upload answer to Knowledge Base");
+      }
+
+      const data = await res.json();
+      const idx = allInteractions.findIndex(i => i.id === id);
+      if(idx !== -1 && data.interaction){
+        allInteractions[idx] = data.interaction;
+      }
+
+      showToast(`Answer successfully added to Knowledge Base as "${data.sourceDoc?.name || docName}"!`);
+      await fetchSources();
+      fetchFeedbackData();
+    } catch(err){
+      alert("Error adding to Knowledge Base: " + err.message);
+    }
   }
 
   async function handleReviewSubmit(e){
@@ -3591,6 +4246,16 @@
 
   // Initial Boot
   checkAuth();
+</script>
+
+<script type="module">
+  import { initFirebase, testConnection } from '/firebase-client.js';
+  try {
+    await initFirebase();
+    await testConnection();
+  } catch (err) {
+    console.warn('Firebase client initial boot:', err);
+  }
 </script>
 
 </body>

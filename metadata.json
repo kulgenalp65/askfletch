@@ -1,6 +1,6 @@
 {
   "name": "Ask Fletch",
-  "description": "New homes coaching from David R. Fletcher",
+  "description": "Real Estate Sales Coaching",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

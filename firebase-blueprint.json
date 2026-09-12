@@ -1,0 +1,168 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with access control role and status",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique user identifier matching auth UID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the user"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "agent"],
+          "description": "Access level role"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "suspended"],
+          "description": "Account status"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp in ISO format"
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last login timestamp in ISO format"
+        }
+      },
+      "required": ["id", "name", "email", "role", "status", "createdAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted record designating an administrator",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the administrator"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when admin role was confirmed"
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "SiteContent": {
+      "title": "SiteContent",
+      "description": "Brand, copy, design, and theme configuration synchronized between build and live environments",
+      "type": "object",
+      "properties": {
+        "textElements": {
+          "type": "object",
+          "description": "Brand name, tags, headings, and coaching copy"
+        },
+        "designElements": {
+          "type": "object",
+          "description": "Theme colors, radius, and font styling"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of latest modification"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Identifier of the admin who saved changes"
+        }
+      },
+      "required": ["textElements", "designElements"]
+    },
+    "SourceDocument": {
+      "title": "SourceDocument",
+      "description": "Knowledge base document used for Ask Fletch coaching context",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique source document identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "File or document display name"
+        },
+        "type": {
+          "type": "string",
+          "description": "File extension or mime type"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the source is active for coaching query context"
+        },
+        "uploadedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Upload timestamp"
+        },
+        "content": {
+          "type": "string",
+          "description": "Extracted text content"
+        }
+      },
+      "required": ["id", "name", "active", "content"]
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Heartbeat document for client connectivity checks",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Status string"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "entities/User"
+      },
+      "description": "User accounts and permissions collection"
+    },
+    "/admins/{adminId}": {
+      "schema": {
+        "$ref": "entities/AdminRecord"
+      },
+      "description": "Trusted directory of administrators"
+    },
+    "/config/{configId}": {
+      "schema": {
+        "$ref": "entities/SiteContent"
+      },
+      "description": "Site branding, design themes, and access control policies"
+    },
+    "/sources/{sourceId}": {
+      "schema": {
+        "$ref": "entities/SourceDocument"
+      },
+      "description": "Managed knowledge base source documents"
+    },
+    "/test/{testId}": {
+      "schema": {
+        "$ref": "entities/TestConnection"
+      },
+      "description": "Client connectivity health check path"
+    }
+  }
+}

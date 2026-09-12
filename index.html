@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ask Fletch — New homes coaching from David R. Fletcher</title>
+<title>Ask Fletch — Real Estate Sales Coaching</title>
 <meta name="description" content="Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials." />
-<meta property="og:title" content="Ask Fletch — New homes coaching from David R. Fletcher" />
+<meta property="og:title" content="Ask Fletch — Real Estate Sales Coaching" />
 <meta property="og:description" content="Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
     --ink-soft: #2C3E50;
     --sand: #F3EEE3;
     --paper: #FCFAF5;
-    --brass: #A9824C;
+    --brass: #9E472A;
     --brass-soft: #C9AD82;
     --charcoal: #26241F;
     --slate: #6B7280;
@@ -504,6 +504,100 @@
   .back-home-btn:hover svg{
     transform:translateX(-2px);
   }
+
+  /* Copy Answer Buttons & Controls */
+  .copy-answer-btn{
+    background:var(--sand);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:4px 9px;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Sans', sans-serif;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    transition:all .15s ease;
+    white-space:nowrap;
+    line-height:1;
+    user-select:none;
+  }
+  .copy-answer-btn:hover{
+    border-color:var(--brass);
+    color:var(--ink);
+    background:#fff;
+    box-shadow:0 1px 3px rgba(28,43,57,0.06);
+  }
+  .copy-answer-btn:active{
+    transform:scale(0.97);
+  }
+  .copy-answer-btn.copied{
+    background:#E8F5E9 !important;
+    border-color:#81C784 !important;
+    color:#2E7D32 !important;
+    box-shadow:none;
+    cursor:default;
+  }
+  .copy-answer-btn.copied .copy-icon{
+    display:none;
+  }
+  .copy-answer-btn.copied .check-icon{
+    display:inline-block !important;
+  }
+
+  .bubble-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+    padding-bottom:6px;
+    border-bottom:1px solid rgba(228,220,200,0.6);
+    gap:10px;
+  }
+  .bubble-coach-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--brass);
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+  }
+  .bubble-coach-badge svg{
+    color:var(--brass);
+    flex-shrink:0;
+  }
+  .quick-copy-btn{
+    padding:3px 7px;
+    font-size:11.5px;
+  }
+  .answer-actions-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .bar-copy-btn{
+    margin-left:auto;
+  }
+  .actions-row .copy-latest-btn{
+    color:var(--ink-soft);
+  }
+  .actions-row .copy-latest-btn.copied{
+    background:#E8F5E9 !important;
+    border-color:#81C784 !important;
+    color:#2E7D32 !important;
+  }
+  .actions-row .copy-latest-btn.copied .copy-icon{
+    display:none;
+  }
+  .actions-row .copy-latest-btn.copied .check-icon{
+    display:inline-block !important;
+  }
   .typing{
     display:inline-flex;
     gap:4px;
@@ -885,7 +979,7 @@
       </svg>
       <div class="brand">
         <div class="name" id="brandName">Ask Fletch</div>
-        <div class="tag" id="brandTag">New homes coaching from David R. Fletcher</div>
+        <div class="tag" id="brandTag">Real Estate Sales Coaching</div>
       </div>
     </a>
     <div class="spacer"></div>
@@ -901,13 +995,13 @@
         <path d="M11 21V40H37V21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M20 40V29H28V40" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <h2 id="welcomeTitle">David R. Fletcher Coaching</h2>
+      <h2 id="welcomeTitle">Ask David Fletcher</h2>
       <p id="welcomeDescription">Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.</p>
       
       <div class="prompt-suggestions" id="promptSuggestions">
-        <button class="prompt-pill" onclick="sendPrompt('How do I approach a new home builder for a co-broker relationship?')">How do I approach a new home builder for a co-broker relationship?</button>
-        <button class="prompt-pill" onclick="sendPrompt('Why do builders refuse to cut base prices, and how should I negotiate?')">Why do builders refuse to cut base prices, and how should I negotiate?</button>
-        <button class="prompt-pill" onclick="sendPrompt('What are the best practices for registering buyers with builders?')">What are the best practices for registering buyers with builders?</button>
+        <button type="button" class="prompt-pill" data-prompt="How do I approach a new home builder for a co-broker relationship?" onclick="sendPrompt(this.getAttribute('data-prompt'))">How do I approach a new home builder for a co-broker relationship?</button>
+        <button type="button" class="prompt-pill" data-prompt="Why do builders refuse to cut base prices, and how should I negotiate?" onclick="sendPrompt(this.getAttribute('data-prompt'))">Why do builders refuse to cut base prices, and how should I negotiate?</button>
+        <button type="button" class="prompt-pill" data-prompt="What are the best practices for registering buyers with builders?" onclick="sendPrompt(this.getAttribute('data-prompt'))">What are the best practices for registering buyers with builders?</button>
       </div>
     </div>
   </div>
@@ -1087,8 +1181,8 @@
   let currentSiteContent = {
     "textElements": {
         "brandName": "Ask Fletch",
-        "brandTag": "New homes coaching from David R. Fletcher",
-        "welcomeTitle": "David R. Fletcher Coaching",
+        "brandTag": "Real Estate Sales Coaching",
+        "welcomeTitle": "Ask David Fletcher",
         "welcomeDescription": "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.",
         "inputPlaceholder": "Ask about pricing, builder relationships, buyer objections...",
         "promptSuggestions": [
@@ -1098,7 +1192,7 @@
         ]
     },
     "designElements": {
-        "brassColor": "#A9824C",
+        "brassColor": "#9E472A",
         "inkColor": "#1C2B39",
         "sandColor": "#F3EEE3",
         "paperColor": "#FCFAF5",
@@ -1118,9 +1212,12 @@
 
   function escapeHtml(str){
     if(!str) return "";
-    const d = document.createElement("div");
-    d.textContent = str;
-    return d.innerHTML;
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   async function checkAuth(){
@@ -1434,7 +1531,7 @@
         `;
       } else {
         html += `
-          <button class="prompt-pill" onclick="sendPrompt(${JSON.stringify(text)})">${escapeHtml(text)}</button>
+          <button type="button" class="prompt-pill" data-prompt="${escapeHtml(text)}" onclick="sendPrompt(this.getAttribute('data-prompt'))">${escapeHtml(text)}</button>
         `;
       }
     });
@@ -1833,7 +1930,13 @@
   });
 
   function sendPrompt(text){
-    inputEl.value = text;
+    if(isSending) return;
+    if(!text || typeof text !== "string") return;
+    if(inputEl){
+      inputEl.value = text.trim();
+      inputEl.style.height = "44px";
+      inputEl.style.height = Math.min(120, inputEl.scrollHeight) + "px";
+    }
     sendMessage();
   }
 
@@ -1888,6 +1991,8 @@
 
   // Feedback state store for active chat session
   const feedbackStore = {};
+  // Storage for full answer texts to ensure accurate clipboard copying
+  const answersStore = {};
 
   // ---------- Chat UI ----------
   function addBubble(role, text){
@@ -1910,6 +2015,8 @@
 
     const interactionId = replyData.interactionId;
     const text = replyData.text || "";
+    const answerId = interactionId || ('ans_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
+    answersStore[answerId] = text;
 
     let advisoryHtml = "";
     if(replyData.flaggedForReview && replyData.flagLabel){
@@ -1921,45 +2028,68 @@
       `;
     }
 
-    let feedbackHtml = "";
+    let feedbackInnerHtml = "";
     if(interactionId){
       feedbackStore[interactionId] = { selectedReason: "", submitted: false };
-      feedbackHtml = `
-        <div class="feedback-container" id="feedback-wrap-${interactionId}">
-          <div class="feedback-bar" id="feedback-bar-${interactionId}">
-            <span class="feedback-label">Was this answer helpful?</span>
-            <button class="feedback-btn" id="btn-up-${interactionId}" onclick="rateResponse('${interactionId}', 'thumbs_up')" title="Thumbs up: Helpful answer">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-              Helpful
-            </button>
-            <button class="feedback-btn" id="btn-down-${interactionId}" onclick="rateResponse('${interactionId}', 'thumbs_down')" title="Thumbs down: Needs improvement">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>
-              Not Helpful
-            </button>
-            <span class="feedback-status" id="status-${interactionId}" style="display:none;"></span>
-          </div>
-
-          <!-- Brief optional follow-up for Thumbs Down -->
-          <div class="feedback-followup" id="followup-${interactionId}" style="display:none;">
-            <div class="feedback-followup-title">What was wrong with this answer? <span style="font-weight:normal;color:var(--slate);font-size:11px;">(Optional)</span></div>
-            <div class="feedback-chips" id="chips-${interactionId}">
-              <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Incorrect info')">Incorrect info</button>
-              <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Too vague')">Too vague</button>
-              <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Not relevant to my market')">Not relevant to my market</button>
-              <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Outdated')">Outdated</button>
-              <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Other')">Other</button>
-            </div>
-            <textarea class="feedback-textarea" id="comment-${interactionId}" placeholder="Specific details, corrected facts, or market context (optional)..."></textarea>
-            <div class="feedback-actions">
-              <button type="button" class="btn-skip" onclick="skipFollowup('${interactionId}')">Skip</button>
-              <button type="button" class="btn-submit-feedback" onclick="submitFollowup('${interactionId}')">Submit Feedback</button>
-            </div>
-          </div>
+      feedbackInnerHtml = `
+        <div class="feedback-bar" id="feedback-bar-${interactionId}">
+          <span class="feedback-label">Was this answer helpful?</span>
+          <button type="button" class="feedback-btn" id="btn-up-${interactionId}" onclick="rateResponse('${interactionId}', 'thumbs_up')" title="Thumbs up: Helpful answer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            Helpful
+          </button>
+          <button type="button" class="feedback-btn" id="btn-down-${interactionId}" onclick="rateResponse('${interactionId}', 'thumbs_down')" title="Thumbs down: Needs improvement">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>
+            Not Helpful
+          </button>
+          <span class="feedback-status" id="status-${interactionId}" style="display:none;"></span>
         </div>
       `;
     }
 
+    const feedbackHtml = `
+      <div class="feedback-container" id="feedback-wrap-${answerId}">
+        <div class="answer-actions-toolbar">
+          ${feedbackInnerHtml}
+          <button type="button" class="copy-answer-btn bar-copy-btn" data-answer-id="${answerId}" onclick="copyChatAnswer('${answerId}', this)" title="Copy answer to clipboard">
+            <svg class="copy-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <svg class="check-icon" style="display:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="copy-label">Copy Answer</span>
+          </button>
+        </div>
+
+        <!-- Brief optional follow-up for Thumbs Down -->
+        ${interactionId ? `
+        <div class="feedback-followup" id="followup-${interactionId}" style="display:none;">
+          <div class="feedback-followup-title">What was wrong with this answer? <span style="font-weight:normal;color:var(--slate);font-size:11px;">(Optional)</span></div>
+          <div class="feedback-chips" id="chips-${interactionId}">
+            <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Incorrect info')">Incorrect info</button>
+            <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Too vague')">Too vague</button>
+            <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Not relevant to my market')">Not relevant to my market</button>
+            <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Outdated')">Outdated</button>
+            <button type="button" class="feedback-chip" onclick="selectChip(this, '${interactionId}', 'Other')">Other</button>
+          </div>
+          <textarea class="feedback-textarea" id="comment-${interactionId}" placeholder="Specific details, corrected facts, or market context (optional)..."></textarea>
+          <div class="feedback-actions">
+            <button type="button" class="btn-skip" onclick="skipFollowup('${interactionId}')">Skip</button>
+            <button type="button" class="btn-submit-feedback" onclick="submitFollowup('${interactionId}')">Submit Feedback</button>
+          </div>
+        </div>` : ''}
+      </div>
+    `;
+
     bubble.innerHTML = `
+      <div class="bubble-header">
+        <div class="bubble-coach-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>David Fletcher</span>
+        </div>
+        <button type="button" class="copy-answer-btn quick-copy-btn" data-answer-id="${answerId}" onclick="copyChatAnswer('${answerId}', this)" title="Copy answer to clipboard" aria-label="Copy answer">
+          <svg class="copy-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <svg class="check-icon" style="display:none;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
       ${advisoryHtml}
       <div class="answer-text">${escapeHtml(text)}</div>
       ${feedbackHtml}
@@ -1969,6 +2099,97 @@
     chatEl.appendChild(row);
     chatEl.scrollTop = chatEl.scrollHeight;
     return bubble;
+  }
+
+  async function copyChatAnswer(answerId, clickedBtn){
+    const text = answersStore[answerId];
+    if(!text) return;
+
+    let success = false;
+    if(navigator.clipboard && window.isSecureContext){
+      try {
+        await navigator.clipboard.writeText(text);
+        success = true;
+      } catch(err) {
+        console.warn("navigator.clipboard writeText failed, attempting fallback:", err);
+      }
+    }
+
+    if(!success){
+      try {
+        const tempArea = document.createElement("textarea");
+        tempArea.value = text;
+        tempArea.style.position = "fixed";
+        tempArea.style.left = "-9999px";
+        tempArea.style.top = "0";
+        tempArea.style.opacity = "0";
+        tempArea.setAttribute("readonly", "");
+        document.body.appendChild(tempArea);
+        tempArea.focus();
+        tempArea.select();
+        tempArea.setSelectionRange(0, 99999);
+        success = document.execCommand("copy");
+        document.body.removeChild(tempArea);
+      } catch(err) {
+        console.error("Fallback execCommand copy failed:", err);
+      }
+    }
+
+    if(success){
+      const buttons = document.querySelectorAll(`button[data-answer-id="${answerId}"]`);
+      const targetButtons = buttons.length ? Array.from(buttons) : (clickedBtn ? [clickedBtn] : []);
+
+      targetButtons.forEach(btn => {
+        btn.classList.add("copied");
+        const label = btn.querySelector(".copy-label");
+        const copyIcon = btn.querySelector(".copy-icon");
+        const checkIcon = btn.querySelector(".check-icon");
+        if(label) label.textContent = "Copied!";
+        if(copyIcon) copyIcon.style.display = "none";
+        if(checkIcon) checkIcon.style.display = "inline-block";
+      });
+
+      showLiveToast("✓ Answer copied to clipboard!");
+
+      setTimeout(() => {
+        targetButtons.forEach(btn => {
+          btn.classList.remove("copied");
+          const label = btn.querySelector(".copy-label");
+          const copyIcon = btn.querySelector(".copy-icon");
+          const checkIcon = btn.querySelector(".check-icon");
+          const originalText = btn.classList.contains("quick-copy-btn") ? "Copy" : "Copy Answer";
+          if(label) label.textContent = originalText;
+          if(copyIcon) copyIcon.style.display = "inline-block";
+          if(checkIcon) checkIcon.style.display = "none";
+        });
+      }, 2200);
+    } else {
+      showLiveToast("Please select the answer text to copy manually.", true);
+    }
+  }
+
+  function copyLatestAnswer(btn){
+    const modelMessages = state.history.filter(m => m.role === "model");
+    if(!modelMessages.length) return;
+    const latest = modelMessages[modelMessages.length - 1];
+    if(!latest || !latest.text) return;
+
+    const keys = Object.keys(answersStore);
+    let targetId = null;
+    for(let i = keys.length - 1; i >= 0; i--){
+      if(answersStore[keys[i]] === latest.text){
+        targetId = keys[i];
+        break;
+      }
+    }
+    if(!targetId){
+      targetId = "ans_latest_" + Date.now();
+      answersStore[targetId] = latest.text;
+    }
+    if(btn){
+      btn.setAttribute("data-answer-id", targetId);
+    }
+    copyChatAnswer(targetId, btn);
   }
 
   async function rateResponse(interactionId, rating){
@@ -2093,6 +2314,11 @@
         </svg>
         <span>Back to Home</span>
       </button>
+      <button class="back-home-btn copy-latest-btn" id="copyLatestActionBtn" onclick="copyLatestAnswer(this)" title="Copy the latest answer to clipboard">
+        <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <svg class="check-icon" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="copy-label">Copy Answer</span>
+      </button>
     `;
     chatEl.appendChild(row);
     chatEl.scrollTop = chatEl.scrollHeight;
@@ -2115,10 +2341,14 @@
     if(row) row.remove();
   }
 
+  let isSending = false;
+
   async function sendMessage(){
+    if(isSending) return;
     const text = inputEl.value.trim();
     if(!text) return;
 
+    isSending = true;
     const currentEmptyState = document.getElementById("emptyState");
     if(currentEmptyState){
       currentEmptyState.remove();
@@ -2146,6 +2376,7 @@
       addBubble("system", `Coaching response error: ${err.message}`);
       addAnswerActions();
     }finally{
+      isSending = false;
       sendBtn.disabled = false;
       inputEl.focus();
     }
@@ -2187,6 +2418,21 @@
     return data;
   }
 
+  // Delegated click handler for prompt pills as a fallback
+  chatEl.addEventListener("click", (e) => {
+    const pill = e.target.closest(".prompt-pill");
+    if(!pill) return;
+    if(isLiveEditing) return;
+    if(pill.querySelector(".live-editable")) return;
+    if(!pill.hasAttribute("onclick")){
+      const promptText = pill.getAttribute("data-prompt") || pill.textContent.trim();
+      if(promptText){
+        e.preventDefault();
+        sendPrompt(promptText);
+      }
+    }
+  });
+
   sendBtn.addEventListener("click", sendMessage);
   inputEl.addEventListener("keydown", (e) => {
     if(e.key === "Enter" && !e.shiftKey){
@@ -2203,6 +2449,16 @@
   checkAuth();
   loadSiteContent();
   inputEl.focus();
+</script>
+
+<script type="module">
+  import { initFirebase, testConnection } from '/firebase-client.js';
+  try {
+    await initFirebase();
+    await testConnection();
+  } catch (err) {
+    console.warn('Firebase client initialization in Ask Fletch:', err);
+  }
 </script>
 
 </body>

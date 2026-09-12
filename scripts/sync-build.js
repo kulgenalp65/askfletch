@@ -23,7 +23,8 @@ function escapeHtmlEntities(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function loadConfig() {
@@ -75,8 +76,7 @@ function applySiteContentToHtml(html, content) {
   if (Array.isArray(t.promptSuggestions) && t.promptSuggestions.length > 0) {
     const pillsHtml = t.promptSuggestions.map(p => {
       const cleanP = p.trim();
-      const escapedJs = cleanP.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `        <button class="prompt-pill" onclick="sendPrompt('${escapedJs}')">${escapeHtmlEntities(cleanP)}</button>`;
+      return `        <button type="button" class="prompt-pill" data-prompt="${escapeHtmlEntities(cleanP)}" onclick="sendPrompt(this.getAttribute('data-prompt'))">${escapeHtmlEntities(cleanP)}</button>`;
     }).join('\n');
 
     html = html.replace(

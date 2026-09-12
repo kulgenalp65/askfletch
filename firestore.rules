@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------
+    // Global Catch-all Deny (Default Deny Principle)
+    // -------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------
+    // Security Helpers & Predicates
+    // -------------------------------------------------------------
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email == 'kulgenalp@gmail.com' &&
+        request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        isBootstrappedAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role', 'status', 'createdAt']) &&
+        data.id is string && isValidId(data.id) &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+        data.email is string && data.email.size() > 3 && data.email.size() <= 254 &&
+        data.role in ['admin', 'agent'] &&
+        data.status in ['active', 'suspended'] &&
+        (data.createdAt is string || data.createdAt is timestamp) &&
+        (!('lastLogin' in data) || data.lastLogin is string || data.lastLogin is timestamp);
+    }
+
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+        data.uid is string && isValidId(data.uid) &&
+        data.email is string && data.email.size() <= 254;
+    }
+
+    // -------------------------------------------------------------
+    // User Accounts Collection
+    // -------------------------------------------------------------
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+
+      // Create: Allowed by an admin, or self-registration with restricted role and status
+      allow create: if isValidId(userId) &&
+        isValidUser(incoming()) &&
+        (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            incoming().id == request.auth.uid &&
+            incoming().role == 'agent' &&
+            incoming().status == 'active'
+          )
+        );
+
+      // Update: Admin can update any mutable field; regular user can only update self profile (name, lastLogin)
+      allow update: if isValidId(userId) &&
+        isValidUser(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'lastLogin'])
+          )
+        );
+
+      // Delete: Admins can delete accounts (except their own active self)
+      allow delete: if isValidId(userId) && isAdmin() && request.auth.uid != userId;
+    }
+
+    // -------------------------------------------------------------
+    // Administrators Registry Collection
+    // -------------------------------------------------------------
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isBootstrappedAdmin() && isValidId(adminId) && isValidAdminRecord(incoming());
+    }
+
+    // -------------------------------------------------------------
+    // Site Content, Theme & Configuration (Global Synchronization)
+    // -------------------------------------------------------------
+    match /config/{configId} {
+      // Public read so all app instances (live web app & AI Studio build preview) display the latest brand & styling
+      allow read: if isValidId(configId);
+      // Writes strictly restricted to administrators
+      allow write: if isValidId(configId) && isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // Knowledge Base Sources
+    // -------------------------------------------------------------
+    match /sources/{sourceId} {
+      allow read: if isValidId(sourceId);
+      allow write: if isValidId(sourceId) && isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // Startup Connection Test
+    // -------------------------------------------------------------
+    match /test/{testId} {
+      allow read: if isValidId(testId);
+      allow write: if false;
+    }
+  }
+}

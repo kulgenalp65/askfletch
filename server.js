@@ -26,8 +26,19 @@ import {
   recordFeedback,
   loadInteractions,
   updateInteractionReview,
+  getInteractionById,
   getFeedbackStats
 } from './interactions.js';
+import { initializeApp as initFirebaseApp, getApps as getFirebaseApps } from 'firebase/app';
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  deleteDoc,
+  getDoc,
+  getDocs,
+  collection
+} from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +60,282 @@ if (!fs.existsSync(SOURCES_FILE)) {
 
 // Initialize requested default admin account (kulgenalp@gmail.com)
 initDefaultAdmin();
+
+// -------------------------------------------------------------
+// Firebase Server Integration & Firestore User Sync
+// -------------------------------------------------------------
+let firebaseServerApp = null;
+let firestoreDb = null;
+
+function initFirebaseServer() {
+  try {
+    const configPath = path.join(__dirname, 'firebase-applet-config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      if (config.apiKey && config.projectId) {
+        if (!getFirebaseApps().length) {
+          firebaseServerApp = initFirebaseApp({
+            apiKey: config.apiKey,
+            authDomain: config.authDomain,
+            projectId: config.projectId,
+            storageBucket: config.storageBucket,
+            messagingSenderId: config.messagingSenderId,
+            appId: config.appId
+          }, 'askfletch-server-admin');
+        } else {
+          firebaseServerApp = getFirebaseApps()[0];
+        }
+        firestoreDb = getFirestore(firebaseServerApp, config.firestoreDatabaseId || '(default)');
+        console.log(`✓ Firebase Firestore initialized on server (Database: ${config.firestoreDatabaseId || '(default)'})`);
+      }
+    }
+  } catch (err) {
+    console.warn('Firebase server initialization notice:', err.message);
+  }
+}
+
+function canServerWriteToFirestore() {
+  // On Node.js, the Firebase Client SDK connects without user credentials unless explicitly authenticated.
+  // Firestore security rules enforce that writes require an authenticated administrator session.
+  // To avoid unauthenticated write stream errors (Code 7 PERMISSION_DENIED), writes are skipped when no auth session exists.
+  // All state is authoritatively persisted in the server's local file store (data/*.json, site-content.json).
+  return false;
+}
+
+async function syncUserToFirestore(user) {
+  if (!canServerWriteToFirestore() || !user) return true;
+  try {
+    const userDocRef = doc(firestoreDb, 'users', user.id);
+    await setDoc(userDocRef, {
+      id: user.id,
+      name: user.name || '',
+      email: user.email,
+      role: user.role || 'agent',
+      status: user.status || 'active',
+      createdAt: user.createdAt || new Date().toISOString(),
+      lastLogin: user.lastLogin || null
+    }, { merge: true });
+
+    if (user.role === 'admin') {
+      try {
+        const adminDocRef = doc(firestoreDb, 'admins', user.id);
+        await setDoc(adminDocRef, {
+          uid: user.id,
+          email: user.email,
+          createdAt: user.createdAt || new Date().toISOString()
+        }, { merge: true });
+      } catch (_) {}
+    }
+    return true;
+  } catch (err) {
+    console.warn(`Firestore user sync notice (${user.email}):`, err.message);
+    return false;
+  }
+}
+
+async function deleteUserFromFirestore(userId) {
+  if (!canServerWriteToFirestore() || !userId) return true;
+  try {
+    const userDocRef = doc(firestoreDb, 'users', userId);
+    await deleteDoc(userDocRef);
+    try {
+      const adminDocRef = doc(firestoreDb, 'admins', userId);
+      await deleteDoc(adminDocRef);
+    } catch (_) {}
+    return true;
+  } catch (err) {
+    console.warn(`Firestore user deletion notice (${userId}):`, err.message);
+    return false;
+  }
+}
+
+async function syncAllUsersToFirestore() {
+  const users = loadUsers();
+  console.log(`✓ Active user accounts loaded from local persistence (${users.length} accounts).`);
+}
+
+// -------------------------------------------------------------
+// Cloud Firestore Synchronization Helpers for Content & Sources
+// -------------------------------------------------------------
+function isLiveEnvironment(req) {
+  const host = (req && req.headers && req.headers.host) || '';
+  return !host.includes('ais-dev') && !host.includes('localhost') && !host.includes('127.0.0.1');
+}
+
+async function syncSiteContentToFirestore(content) {
+  if (!canServerWriteToFirestore() || !content) return true;
+  try {
+    const configDocRef = doc(firestoreDb, 'config', 'site-content');
+    await setDoc(configDocRef, {
+      textElements: content.textElements || {},
+      designElements: content.designElements || {},
+      updatedAt: content.updatedAt || new Date().toISOString(),
+      updatedBy: content.updatedBy || 'admin'
+    }, { merge: true });
+    console.log('✓ Site content successfully synchronized to Cloud Firestore');
+    return true;
+  } catch (err) {
+    console.warn('Firestore site-content sync notice:', err.message);
+    return false;
+  }
+}
+
+async function fetchSiteContentFromFirestore() {
+  if (!firestoreDb) return null;
+  try {
+    const configDocRef = doc(firestoreDb, 'config', 'site-content');
+    const snap = await getDoc(configDocRef);
+    if (snap.exists()) {
+      return snap.data();
+    }
+  } catch (err) {
+    console.warn('Could not read site-content from Firestore:', err.message);
+  }
+  return null;
+}
+
+async function pullAndApplyCloudSiteContent() {
+  if (!firestoreDb) return null;
+  try {
+    const cloudContent = await fetchSiteContentFromFirestore();
+    if (cloudContent && cloudContent.textElements && cloudContent.designElements) {
+      const local = loadSiteContent();
+      const cloudTime = new Date(cloudContent.updatedAt || 0).getTime();
+      const localTime = new Date(local.updatedAt || 0).getTime();
+      if (cloudTime > localTime || !local.updatedAt) {
+        saveSiteContent(cloudContent);
+        syncBuildFiles(cloudContent);
+        console.log('✓ Pulled and synchronized newer site content from Cloud Firestore to codebase');
+        return cloudContent;
+      }
+      return local;
+    }
+  } catch (err) {
+    console.warn('Cloud site content synchronization notice:', err.message);
+  }
+  return null;
+}
+
+async function syncSourcesToFirestore(sources) {
+  if (!canServerWriteToFirestore() || !Array.isArray(sources)) return true;
+  try {
+    for (const s of sources) {
+      if (!s.id) continue;
+      const docRef = doc(firestoreDb, 'sources', s.id);
+      await setDoc(docRef, {
+        id: s.id,
+        name: s.name || 'Untitled Document',
+        type: s.type || 'txt',
+        size: s.size || 0,
+        active: s.active !== false,
+        uploadedAt: s.uploadedAt || new Date().toISOString(),
+        content: s.content || s.text || '',
+        text: s.text || s.content || '',
+        wordCount: s.wordCount || 0
+      }, { merge: true });
+    }
+    return true;
+  } catch (err) {
+    console.warn('Firestore sources sync notice:', err.message);
+    return false;
+  }
+}
+
+async function deleteSourceFromFirestore(sourceId) {
+  if (!canServerWriteToFirestore() || !sourceId) return true;
+  try {
+    const docRef = doc(firestoreDb, 'sources', sourceId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (err) {
+    console.warn('Firestore source deletion notice:', err.message);
+    return false;
+  }
+}
+
+async function pullAndApplyCloudSources() {
+  if (!firestoreDb) return null;
+  try {
+    const snap = await getDocs(collection(firestoreDb, 'sources'));
+    const cloudSources = [];
+    snap.forEach((d) => {
+      cloudSources.push(d.data());
+    });
+    if (cloudSources.length > 0) {
+      const localSources = loadSources();
+      let modified = false;
+      for (const cs of cloudSources) {
+        const localIdx = localSources.findIndex(s => s.id === cs.id);
+        if (localIdx === -1) {
+          localSources.push(cs);
+          modified = true;
+        } else {
+          const cloudTime = new Date(cs.uploadedAt || 0).getTime();
+          const localTime = new Date(localSources[localIdx].uploadedAt || 0).getTime();
+          if (cloudTime > localTime) {
+            localSources[localIdx] = cs;
+            modified = true;
+          }
+        }
+      }
+      if (modified) {
+        saveSources(localSources);
+        console.log(`✓ Pulled and synchronized ${cloudSources.length} knowledge sources from Cloud Firestore`);
+      }
+      return localSources;
+    }
+  } catch (err) {
+    console.warn('Cloud sources synchronization notice:', err.message);
+  }
+  return null;
+}
+
+async function syncSettingsToFirestore(settings) {
+  if (!canServerWriteToFirestore() || !settings) return true;
+  try {
+    const docRef = doc(firestoreDb, 'config', 'settings');
+    await setDoc(docRef, {
+      requireLogin: Boolean(settings.requireLogin),
+      restrictLiveEditing: Boolean(settings.restrictLiveEditing),
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    return true;
+  } catch (err) {
+    console.warn('Firestore settings sync notice:', err.message);
+    return false;
+  }
+}
+
+async function pullAndApplyCloudSettings() {
+  if (!firestoreDb) return null;
+  try {
+    const docRef = doc(firestoreDb, 'config', 'settings');
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const cloudSettings = snap.data();
+      const localSettings = loadSettings();
+      let changed = false;
+      if (typeof cloudSettings.requireLogin === 'boolean' && cloudSettings.requireLogin !== localSettings.requireLogin) {
+        localSettings.requireLogin = cloudSettings.requireLogin;
+        changed = true;
+      }
+      if (typeof cloudSettings.restrictLiveEditing === 'boolean' && cloudSettings.restrictLiveEditing !== localSettings.restrictLiveEditing) {
+        localSettings.restrictLiveEditing = cloudSettings.restrictLiveEditing;
+        changed = true;
+      }
+      if (changed) {
+        saveSettings(localSettings);
+      }
+      return localSettings;
+    } else {
+      const localSettings = loadSettings();
+      await syncSettingsToFirestore(localSettings);
+    }
+  } catch (err) {
+    console.warn('Cloud settings synchronization notice:', err.message);
+  }
+  return null;
+}
 
 function loadSources() {
   try {
@@ -107,7 +394,8 @@ function escapeHtmlEntities(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function applySiteContentToHtml(html, content) {
@@ -157,8 +445,7 @@ function applySiteContentToHtml(html, content) {
   if (Array.isArray(t.promptSuggestions) && t.promptSuggestions.length > 0) {
     const pillsHtml = t.promptSuggestions.map(p => {
       const cleanP = p.trim();
-      const escapedJs = cleanP.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `        <button class="prompt-pill" onclick="sendPrompt('${escapedJs}')">${escapeHtmlEntities(cleanP)}</button>`;
+      return `        <button type="button" class="prompt-pill" data-prompt="${escapeHtmlEntities(cleanP)}" onclick="sendPrompt(this.getAttribute('data-prompt'))">${escapeHtmlEntities(cleanP)}</button>`;
     }).join('\n');
 
     html = html.replace(
@@ -390,6 +677,28 @@ app.get('/api/auth/policy', (req, res) => {
   });
 });
 
+// Firebase client configuration endpoint
+app.get('/api/firebase-config', (req, res) => {
+  try {
+    const configPath = path.join(__dirname, 'firebase-applet-config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return res.json({
+        projectId: config.projectId,
+        appId: config.appId,
+        apiKey: config.apiKey,
+        authDomain: config.authDomain,
+        firestoreDatabaseId: config.firestoreDatabaseId,
+        storageBucket: config.storageBucket,
+        messagingSenderId: config.messagingSenderId
+      });
+    }
+  } catch (err) {
+    console.error('Error reading firebase-applet-config.json:', err);
+  }
+  res.status(404).json({ error: 'Firebase configuration not found.' });
+});
+
 // -------------------------------------------------------------
 // Admin User & Access Management Endpoints
 // -------------------------------------------------------------
@@ -433,6 +742,8 @@ app.post('/api/admin/users', authMiddleware, adminMiddleware, (req, res) => {
 
     users.push(newUser);
     saveUsers(users);
+    // Asynchronously synchronize user account to Firebase Firestore
+    syncUserToFirestore(newUser).catch(() => {});
     res.status(201).json(sanitizeUser(newUser));
   } catch (err) {
     console.error('Error creating user:', err);
@@ -492,6 +803,8 @@ app.patch('/api/admin/users/:id', authMiddleware, adminMiddleware, (req, res) =>
     }
 
     saveUsers(users);
+    // Asynchronously synchronize updated user profile to Firebase Firestore
+    syncUserToFirestore(user).catch(() => {});
     res.json(sanitizeUser(user));
   } catch (err) {
     console.error('Error updating user:', err);
@@ -514,6 +827,8 @@ app.delete('/api/admin/users/:id', authMiddleware, adminMiddleware, (req, res) =
   const deleted = users.splice(index, 1)[0];
   destroyUserSessions(deleted.id);
   saveUsers(users);
+  // Asynchronously delete user document from Firebase Firestore
+  deleteUserFromFirestore(deleted.id).catch(() => {});
   res.json({ success: true, id: deleted.id, email: deleted.email });
 });
 
@@ -522,13 +837,31 @@ app.get('/api/admin/settings', authMiddleware, adminMiddleware, (req, res) => {
   res.json(loadSettings());
 });
 
-app.post('/api/admin/settings', authMiddleware, adminMiddleware, (req, res) => {
+app.post('/api/admin/settings', authMiddleware, adminMiddleware, async (req, res) => {
   const current = loadSettings();
   if (typeof req.body.requireLogin === 'boolean') {
     current.requireLogin = req.body.requireLogin;
   }
+  if (typeof req.body.restrictLiveEditing === 'boolean') {
+    current.restrictLiveEditing = req.body.restrictLiveEditing;
+  }
   saveSettings(current);
+  await syncSettingsToFirestore(current);
   res.json(current);
+});
+
+// Environment & Build synchronization status
+app.get('/api/admin/environment', (req, res) => {
+  const host = (req.headers && req.headers.host) || '';
+  const isBuildMode = host.includes('ais-dev') || host.includes('localhost') || host.includes('127.0.0.1');
+  const settings = loadSettings();
+  res.json({
+    host,
+    isBuildMode,
+    isLiveWeb: !isBuildMode,
+    firestoreConfigured: Boolean(firestoreDb),
+    restrictLiveEditing: Boolean(settings.restrictLiveEditing)
+  });
 });
 
 // -------------------------------------------------------------
@@ -586,17 +919,32 @@ app.get('/api/admin/sources', authMiddleware, adminMiddleware, (req, res) => {
 
 // Admin get single source (with full text)
 app.get('/api/admin/sources/:id', authMiddleware, adminMiddleware, (req, res) => {
-  const sources = loadSources();
-  const doc = sources.find(s => s.id === req.params.id);
-  if (!doc) {
-    return res.status(404).json({ error: 'Document not found' });
+  try {
+    const rawId = req.params.id;
+    let decodedId = rawId;
+    try { decodedId = decodeURIComponent(rawId); } catch (_) {}
+    const sources = loadSources();
+    const doc = sources.find(s => s.id === rawId || s.id === decodedId);
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    res.json(doc);
+  } catch (err) {
+    console.error('Error fetching source document:', err);
+    res.status(500).json({ error: 'Failed to fetch source document: ' + err.message });
   }
-  res.json(doc);
 });
 
 // Admin add source document
 app.post('/api/admin/sources', authMiddleware, adminMiddleware, (req, res) => {
   try {
+    const settings = loadSettings();
+    if (settings.restrictLiveEditing && isLiveEnvironment(req)) {
+      return res.status(403).json({
+        error: 'Document additions are restricted to Google AI Studio Build Mode. Please add documents in AI Studio, or disable this policy in Site Access & Editing Policy.'
+      });
+    }
+
     const { name, text, type, size } = req.body;
     if (!name || !text) {
       return res.status(400).json({ error: 'Name and text are required.' });
@@ -619,6 +967,9 @@ app.post('/api/admin/sources', authMiddleware, adminMiddleware, (req, res) => {
     sources.unshift(newDoc);
     saveSources(sources);
 
+    // Asynchronously synchronize new source to Cloud Firestore
+    syncSourcesToFirestore([newDoc]).catch(() => {});
+
     res.status(201).json({
       id: newDoc.id,
       name: newDoc.name,
@@ -636,39 +987,83 @@ app.post('/api/admin/sources', authMiddleware, adminMiddleware, (req, res) => {
 
 // Admin toggle active or update source
 app.patch('/api/admin/sources/:id', authMiddleware, adminMiddleware, (req, res) => {
-  const sources = loadSources();
-  const index = sources.findIndex(s => s.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Document not found' });
-  }
+  try {
+    const settings = loadSettings();
+    if (settings.restrictLiveEditing && isLiveEnvironment(req)) {
+      return res.status(403).json({
+        error: 'Document modifications are restricted to Google AI Studio Build Mode.'
+      });
+    }
 
-  const current = sources[index];
-  if (typeof req.body.active === 'boolean') {
-    current.active = req.body.active;
-  }
-  if (typeof req.body.name === 'string' && req.body.name.trim()) {
-    current.name = req.body.name.trim();
-  }
+    const rawId = req.params.id;
+    let decodedId = rawId;
+    try { decodedId = decodeURIComponent(rawId); } catch (_) {}
+    const sources = loadSources();
+    const index = sources.findIndex(s => s.id === rawId || s.id === decodedId);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
 
-  saveSources(sources);
-  res.json({
-    id: current.id,
-    name: current.name,
-    active: current.active !== false
-  });
+    const current = sources[index];
+    if (typeof req.body.active === 'boolean') {
+      current.active = req.body.active;
+    }
+    if (typeof req.body.name === 'string' && req.body.name.trim()) {
+      current.name = req.body.name.trim();
+    }
+
+    const saved = saveSources(sources);
+    if (!saved) {
+      return res.status(500).json({ error: 'Failed to save updated sources to disk.' });
+    }
+
+    // Asynchronously sync update to Cloud Firestore
+    syncSourcesToFirestore([current]).catch(() => {});
+
+    res.json({
+      id: current.id,
+      name: current.name,
+      active: current.active !== false
+    });
+  } catch (err) {
+    console.error('Error updating source document:', err);
+    res.status(500).json({ error: 'Failed to update source document: ' + err.message });
+  }
 });
 
 // Admin delete source
 app.delete('/api/admin/sources/:id', authMiddleware, adminMiddleware, (req, res) => {
-  const sources = loadSources();
-  const index = sources.findIndex(s => s.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Document not found' });
-  }
+  try {
+    const settings = loadSettings();
+    if (settings.restrictLiveEditing && isLiveEnvironment(req)) {
+      return res.status(403).json({
+        error: 'Document deletions are restricted to Google AI Studio Build Mode.'
+      });
+    }
 
-  const deleted = sources.splice(index, 1)[0];
-  saveSources(sources);
-  res.json({ success: true, id: deleted.id, name: deleted.name });
+    const rawId = req.params.id;
+    let decodedId = rawId;
+    try { decodedId = decodeURIComponent(rawId); } catch (_) {}
+    const sources = loadSources();
+    const index = sources.findIndex(s => s.id === rawId || s.id === decodedId);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const deleted = sources.splice(index, 1)[0];
+    const saved = saveSources(sources);
+    if (!saved) {
+      return res.status(500).json({ error: 'Failed to save updated sources to disk.' });
+    }
+
+    // Asynchronously delete source document from Cloud Firestore
+    deleteSourceFromFirestore(deleted.id).catch(() => {});
+
+    res.json({ success: true, id: deleted.id, name: deleted.name });
+  } catch (err) {
+    console.error('Error deleting source document:', err);
+    res.status(500).json({ error: 'Failed to delete source document: ' + err.message });
+  }
 });
 
 // User-facing Chat endpoint (with access policy enforcement)
@@ -864,24 +1259,180 @@ app.get('/api/admin/feedback', authMiddleware, adminMiddleware, (req, res) => {
   }
 });
 
-// Admin: Update review status and maintainer notes on an interaction
+// Format knowledge base text document content for Ask Fletch RAG grounding
+function formatKnowledgeDocumentContent({
+  topicCategory,
+  jurisdiction,
+  question,
+  answer,
+  reviewedBy,
+  dateString
+}) {
+  return [
+    '================================================================================',
+    'DAVID FLETCHER COACHING & Q&A GUIDANCE',
+    '================================================================================',
+    `TOPIC: ${topicCategory || 'General Co-Brokering Principles'}`,
+    `JURISDICTION: ${jurisdiction || 'General / National'}`,
+    `AGENT QUESTION:`,
+    `${(question || '').trim()}`,
+    '',
+    `APPROVED COACHING ANSWER (DAVID R. FLETCHER):`,
+    `${(answer || '').trim()}`,
+    '',
+    'VERIFIED KNOWLEDGE BASE ARCHIVE:',
+    `Approved by ${reviewedBy || 'Administrator'} for the Ask Fletch continuous improvement knowledge base.`,
+    `Date Archived: ${dateString || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    '================================================================================'
+  ].join('\n');
+}
+
+// Add revised answer text as a new text document (.txt) to sources
+function addAnswerToKnowledgeBaseSources({
+  interaction,
+  customAnswer,
+  customDocName,
+  adminUser
+}) {
+  const answerToUse = (typeof customAnswer === 'string' && customAnswer.trim())
+    ? customAnswer.trim()
+    : interaction.answer;
+
+  const cleanQ = (interaction.question || 'Coaching QA')
+    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 55);
+
+  let docName = (customDocName && customDocName.trim()) || `David Fletcher Coaching - ${cleanQ}.txt`;
+  if (!docName.toLowerCase().endsWith('.txt')) {
+    docName += '.txt';
+  }
+
+  const docContent = formatKnowledgeDocumentContent({
+    topicCategory: interaction.topicCategory,
+    jurisdiction: interaction.jurisdiction,
+    question: interaction.question,
+    answer: answerToUse,
+    reviewedBy: adminUser?.name || adminUser?.email || 'Administrator'
+  });
+
+  const trimmedContent = docContent.trim();
+  const wordCount = trimmedContent.split(/\s+/).filter(Boolean).length;
+  const newDoc = {
+    id: 'doc_' + crypto.randomUUID(),
+    name: docName,
+    type: 'txt',
+    size: Buffer.byteLength(trimmedContent, 'utf-8'),
+    wordCount,
+    text: trimmedContent,
+    content: trimmedContent,
+    active: true,
+    uploadedAt: new Date().toISOString()
+  };
+
+  const sources = loadSources();
+  sources.unshift(newDoc);
+  saveSources(sources);
+  syncSourcesToFirestore([newDoc]).catch(() => {});
+
+  return newDoc;
+}
+
+// Admin: Update review status, maintainer notes, and optionally revised answer & auto-add to Knowledge Base
 app.patch('/api/admin/feedback/:id', authMiddleware, adminMiddleware, (req, res) => {
   try {
-    const { reviewed, adminNotes } = req.body;
-    const updated = updateInteractionReview(req.params.id, {
+    const { reviewed, adminNotes, revisedAnswer, addToKnowledgeBase, documentName } = req.body;
+    const adminUser = req.user || {};
+    const adminName = adminUser.name || adminUser.email || 'Administrator';
+
+    let updated = updateInteractionReview(req.params.id, {
       reviewed,
       adminNotes,
-      reviewedBy: req.user.name || req.user.email
+      revisedAnswer,
+      reviewedBy: adminName
     });
 
     if (!updated) {
       return res.status(404).json({ error: 'Interaction not found.' });
     }
 
-    res.json(updated);
+    let createdDoc = null;
+    if (addToKnowledgeBase) {
+      const settings = loadSettings();
+      if (settings.restrictLiveEditing && isLiveEnvironment(req)) {
+        return res.status(403).json({
+          error: 'Document additions are restricted to Google AI Studio Build Mode. Please disable this policy in Site Access & Editing Policy.'
+        });
+      }
+
+      createdDoc = addAnswerToKnowledgeBaseSources({
+        interaction: updated,
+        customAnswer: revisedAnswer,
+        customDocName: documentName,
+        adminUser
+      });
+
+      updated = updateInteractionReview(req.params.id, {
+        knowledgeDocId: createdDoc.id,
+        knowledgeDocName: createdDoc.name,
+        reviewed: true,
+        reviewedBy: adminName
+      });
+    }
+
+    res.json({
+      ...updated,
+      createdDoc
+    });
   } catch (err) {
     console.error('Error updating review status:', err);
-    res.status(500).json({ error: 'Failed to update review status.' });
+    res.status(500).json({ error: 'Failed to update review status: ' + err.message });
+  }
+});
+
+// Admin: Upload interaction answer text directly to Knowledge Base as a text document (.txt)
+app.post('/api/admin/feedback/:id/add-to-knowledge-base', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    const settings = loadSettings();
+    if (settings.restrictLiveEditing && isLiveEnvironment(req)) {
+      return res.status(403).json({
+        error: 'Document additions are restricted to Google AI Studio Build Mode. Please disable this policy in Site Access & Editing Policy.'
+      });
+    }
+
+    const item = getInteractionById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ error: 'Interaction not found.' });
+    }
+
+    const { documentName, customText } = req.body;
+    const adminUser = req.user || {};
+    const adminName = adminUser.name || adminUser.email || 'Administrator';
+
+    const createdDoc = addAnswerToKnowledgeBaseSources({
+      interaction: item,
+      customAnswer: customText,
+      customDocName: documentName,
+      adminUser
+    });
+
+    const updated = updateInteractionReview(req.params.id, {
+      knowledgeDocId: createdDoc.id,
+      knowledgeDocName: createdDoc.name,
+      reviewed: true,
+      reviewedBy: adminName
+    });
+
+    res.status(201).json({
+      success: true,
+      interaction: updated,
+      sourceDoc: createdDoc,
+      message: `Successfully uploaded answer to Knowledge Base as "${createdDoc.name}".`
+    });
+  } catch (err) {
+    console.error('Error adding answer to knowledge base:', err);
+    res.status(500).json({ error: 'Failed to add answer to knowledge base: ' + err.message });
   }
 });
 
@@ -902,6 +1453,9 @@ app.get('/api/admin/feedback/export', authMiddleware, adminMiddleware, (req, res
         'User Email',
         'Question',
         'Answer',
+        'Is Answer Revised',
+        'Original Answer',
+        'Knowledge Base Document',
         'Rating',
         'Feedback Reason',
         'Feedback Comment',
@@ -921,6 +1475,9 @@ app.get('/api/admin/feedback/export', authMiddleware, adminMiddleware, (req, res
         `"${(i.userEmail || '').replace(/"/g, '""')}"`,
         `"${(i.question || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
         `"${(i.answer || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+        i.isRevised ? 'YES' : 'NO',
+        `"${(i.originalAnswer || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+        `"${(i.knowledgeDocName || '').replace(/"/g, '""')}"`,
         i.rating || 'unrated',
         `"${(i.feedbackReason || '').replace(/"/g, '""')}"`,
         `"${(i.feedbackComment || '').replace(/"/g, '""')}"`,
@@ -976,15 +1533,33 @@ app.get('/api/site-content/timestamp', (req, res) => {
   }
 });
 
-// Admin: Force sync build files on demand
-app.post('/api/site-content/sync', authMiddleware, adminMiddleware, (req, res) => {
+// Admin: Force sync build files and Cloud Firestore on demand
+app.post('/api/site-content/sync', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    // 1. Pull any newer changes from Cloud Firestore to local storage
+    await pullAndApplyCloudSiteContent();
+    await pullAndApplyCloudSources();
+    await pullAndApplyCloudSettings();
+
     const current = loadSiteContent();
+    const sources = loadSources();
+    const settings = loadSettings();
+
+    // 2. Synchronize all local codebase files (index.html, metadata.json, ask-fletch.html)
     syncBuildFiles(current);
+
+    // 3. Ensure Cloud Firestore also reflects latest state
+    await syncSiteContentToFirestore(current);
+    await syncSourcesToFirestore(sources);
+    await syncSettingsToFirestore(settings);
+
     res.json({
       success: true,
-      message: 'All codebase files (index.html, metadata.json, ask-fletch.html) successfully synchronized.',
-      siteContent: current
+      message: 'All codebase files (index.html, metadata.json, data/) and Cloud Firestore successfully synchronized.',
+      siteContent: current,
+      totalSources: sources.length,
+      settings,
+      cloudSynced: Boolean(firestoreDb)
     });
   } catch (err) {
     console.error('Error in force sync:', err);
@@ -993,9 +1568,16 @@ app.post('/api/site-content/sync', authMiddleware, adminMiddleware, (req, res) =
 });
 
 // Admin: Save all text and design changes
-app.post('/api/site-content', authMiddleware, adminMiddleware, (req, res) => {
+app.post('/api/site-content', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    const settings = loadSettings();
+    if (settings.restrictLiveEditing && isLiveEnvironment(req)) {
+      return res.status(403).json({
+        error: 'Content editing is restricted to Google AI Studio Build Mode. Please make changes in AI Studio, or disable this policy in Site Access & Editing Policy.'
+      });
+    }
+
     const { textElements, designElements } = req.body;
     if (!textElements || !designElements) {
       return res.status(400).json({ error: 'Missing required textElements or designElements object' });
@@ -1026,7 +1608,10 @@ app.post('/api/site-content', authMiddleware, adminMiddleware, (req, res) => {
     };
 
     if (saveSiteContent(updated)) {
-      res.json({ success: true, siteContent: updated });
+      syncBuildFiles(updated);
+      // Synchronize to Cloud Firestore so both live web app and AI Studio preview stay in sync
+      syncSiteContentToFirestore(updated).catch(() => {});
+      res.json({ success: true, siteContent: updated, cloudSynced: Boolean(firestoreDb) });
     } else {
       res.status(500).json({ error: 'Failed to write site content configuration' });
     }
@@ -1248,8 +1833,19 @@ app.use((req, res) => {
   sendNoCacheHtml(res, INDEX_HTML_FILE, (raw) => applySiteContentToHtml(raw, content));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Ask Fletch server running on http://0.0.0.0:${PORT}`);
+  // Initialize Firebase server connection and sync user accounts to Firestore
+  try {
+    initFirebaseServer();
+    await syncAllUsersToFirestore();
+    // Pull any newer configuration or knowledge documents saved on the live web app
+    await pullAndApplyCloudSiteContent();
+    await pullAndApplyCloudSources();
+    await pullAndApplyCloudSettings();
+  } catch (err) {
+    console.warn('Initial cloud sync notice on startup:', err.message);
+  }
   // Guarantee files on disk (index.html, metadata.json, ask-fletch.html) match site-content.json on startup
   try {
     const initialContent = loadSiteContent();

@@ -232,8 +232,20 @@ export function recordFeedback({
   return item;
 }
 
-// Update review status and notes by admin
-export function updateInteractionReview(interactionId, { reviewed, adminNotes, reviewedBy }) {
+export function getInteractionById(interactionId) {
+  const interactions = loadInteractions();
+  return interactions.find(i => i.id === interactionId) || null;
+}
+
+// Update review status, notes, revised answer, and knowledge base document links by admin
+export function updateInteractionReview(interactionId, {
+  reviewed,
+  adminNotes,
+  reviewedBy,
+  revisedAnswer,
+  knowledgeDocId,
+  knowledgeDocName
+}) {
   const interactions = loadInteractions();
   const index = interactions.findIndex(i => i.id === interactionId);
 
@@ -242,6 +254,8 @@ export function updateInteractionReview(interactionId, { reviewed, adminNotes, r
   }
 
   const item = interactions[index];
+
+  // Admin review flags
   if (typeof reviewed === 'boolean') {
     item.reviewed = reviewed;
     item.reviewedAt = reviewed ? new Date().toISOString() : null;
@@ -249,6 +263,32 @@ export function updateInteractionReview(interactionId, { reviewed, adminNotes, r
   }
   if (typeof adminNotes === 'string') {
     item.adminNotes = adminNotes.trim();
+  }
+
+  // Answer revision support
+  if (typeof revisedAnswer === 'string' && revisedAnswer.trim()) {
+    const trimmed = revisedAnswer.trim();
+    if (trimmed !== item.answer) {
+      if (!item.originalAnswer) {
+        item.originalAnswer = item.answer;
+      }
+      item.answer = trimmed;
+      item.isRevised = true;
+      item.revisedAt = new Date().toISOString();
+      item.revisedBy = reviewedBy || 'Administrator';
+
+      // An approved revised answer marks this interaction as reviewed
+      item.reviewed = true;
+      item.reviewedAt = item.reviewedAt || new Date().toISOString();
+      item.reviewedBy = item.reviewedBy || (reviewedBy || 'Administrator');
+    }
+  }
+
+  // Knowledge base document link tracking
+  if (knowledgeDocId) {
+    item.knowledgeDocId = knowledgeDocId;
+    item.knowledgeDocName = knowledgeDocName || item.knowledgeDocName || 'Knowledge Base Document';
+    item.addedToKnowledgeBaseAt = new Date().toISOString();
   }
 
   saveInteractions(interactions);
