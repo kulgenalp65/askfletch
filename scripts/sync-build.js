@@ -71,6 +71,18 @@ function applySiteContentToHtml(html, content) {
   html = html.replace(/<div class="tag" id="brandTag">[\s\S]*?<\/div>/i, `<div class="tag" id="brandTag">${escapeHtmlEntities(tag)}</div>`);
   html = html.replace(/<h2 id="welcomeTitle">[\s\S]*?<\/h2>/i, `<h2 id="welcomeTitle">${escapeHtmlEntities(title)}</h2>`);
   html = html.replace(/<p id="welcomeDescription">[\s\S]*?<\/p>/i, `<p id="welcomeDescription">${escapeHtmlEntities(desc)}</p>`);
+
+  // Coach Photo & Text Section
+  const photoUrl = t.coachPhotoUrl || '/uploads/david-fletcher.jpg';
+  const photoTitle = t.coachPhotoTitle || 'David R. Fletcher';
+  const photoText = t.coachPhotoText || 'Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.';
+  const showPhoto = t.showCoachPhotoSection !== false;
+
+  html = html.replace(/<div class="coach-photo-section" id="coachPhotoSection"[\s\S]*?>/i, `<div class="coach-photo-section" id="coachPhotoSection"${showPhoto ? '' : ' style="display:none;"'}>`);
+  html = html.replace(/<img id="coachPhotoImg"[\s\S]*?\/>/i, `<img id="coachPhotoImg" src="${escapeHtmlEntities(photoUrl)}" alt="${escapeHtmlEntities(photoTitle)}" class="coach-photo" />`);
+  html = html.replace(/<h3 id="coachPhotoTitle" class="coach-photo-title">[\s\S]*?<\/h3>/i, `<h3 id="coachPhotoTitle" class="coach-photo-title">${escapeHtmlEntities(photoTitle)}</h3>`);
+  html = html.replace(/<p id="coachPhotoText" class="coach-photo-text">[\s\S]*?<\/p>/i, `<p id="coachPhotoText" class="coach-photo-text">${escapeHtmlEntities(photoText)}</p>`);
+
   html = html.replace(/<textarea id="input"\s+placeholder="[\s\S]*?"/i, `<textarea id="input" placeholder="${escapeHtmlEntities(placeholder)}"`);
 
   if (Array.isArray(t.promptSuggestions) && t.promptSuggestions.length > 0) {

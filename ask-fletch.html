@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Ask Fletch — Real Estate Sales Coaching</title>
-<meta name="description" content="Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials." />
+<meta name="description" content="Ask anything about new home sales, builder relationships, or overcoming buyer objections. Answers are based exclusively on David Fletcher&#39;s library of real estate sales courses, handbooks, articles, and blogs. You will not find the same answers with the same point of view from a chat bot that only searches the internet. This coaching is directly from the mind of David Fletcher." />
 <meta property="og:title" content="Ask Fletch — Real Estate Sales Coaching" />
-<meta property="og:description" content="Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials." />
+<meta property="og:description" content="Ask anything about new home sales, builder relationships, or overcoming buyer objections. Answers are based exclusively on David Fletcher&#39;s library of real estate sales courses, handbooks, articles, and blogs. You will not find the same answers with the same point of view from a chat bot that only searches the internet. This coaching is directly from the mind of David Fletcher." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,9 +14,9 @@
   :root{
     --ink: #1C2B39;
     --ink-soft: #2C3E50;
-    --sand: #F3EEE3;
-    --paper: #FCFAF5;
-    --brass: #9E472A;
+    --sand: #f3eee3;
+    --paper: #fcfaf5;
+    --brass: #9e472a;
     --brass-soft: #C9AD82;
     --charcoal: #26241F;
     --slate: #6B7280;
@@ -631,6 +631,95 @@
   }
   .empty-state p{ font-size:13.5px; line-height:1.6; margin:0 0 16px; }
 
+  /* ---------- Featured Coach Photo & Text Section ---------- */
+  .coach-photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto 16px;
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    max-width: 440px;
+    box-shadow: 0 1px 4px rgba(28,43,57,0.04);
+    transition: all .2s ease;
+  }
+  .coach-photo-container {
+    position: relative;
+    width: 108px;
+    height: 108px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 2px solid var(--line);
+    background: var(--sand);
+    flex-shrink: 0;
+  }
+  .coach-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .2s ease;
+  }
+  .photo-upload-overlay-btn {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(28, 43, 57, 0.90);
+    color: #fff;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 6px;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: background .15s ease;
+  }
+  .photo-upload-overlay-btn:hover {
+    background: var(--brass);
+  }
+  body.live-editing .photo-upload-overlay-btn {
+    display: flex;
+  }
+  body.live-editing .coach-photo-container {
+    cursor: pointer;
+    outline: 2px dashed var(--brass);
+    outline-offset: 3px;
+  }
+  body.live-editing .coach-photo-container:hover .coach-photo {
+    opacity: 0.85;
+  }
+  .coach-text-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    width: 100%;
+  }
+  .coach-photo-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.3;
+  }
+  .coach-photo-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--slate);
+    margin: 0;
+    max-width: 400px;
+  }
+
   .prompt-suggestions{
     display:flex;
     flex-wrap:wrap;
@@ -990,18 +1079,28 @@
 
   <div class="chat" id="chat">
     <div class="empty-state" id="emptyState">
-      <svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 24L24 8L42 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M11 21V40H37V21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M20 40V29H28V40" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
       <h2 id="welcomeTitle">Ask David Fletcher</h2>
-      <p id="welcomeDescription">Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.</p>
+
+      <div class="coach-photo-section" id="coachPhotoSection">
+        <div class="coach-photo-container" id="coachPhotoContainer" title="Click or drop an image file here to change photo">
+          <img id="coachPhotoImg" src="/uploads/david-fletcher.jpg" alt="David R. Fletcher" class="coach-photo" />
+          <button type="button" class="photo-upload-overlay-btn" id="photoUploadOverlayBtn" onclick="triggerLivePhotoUpload()" title="Upload or Change Photo">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Upload Photo</span>
+          </button>
+        </div>
+        <div class="coach-text-block" id="coachTextBlock">
+          <h3 id="coachPhotoTitle" class="coach-photo-title">David R. Fletcher</h3>
+          <p id="coachPhotoText" class="coach-photo-text">Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.</p>
+        </div>
+      </div>
+      <input type="file" id="livePhotoFileInput" accept="image/*" style="display:none;" onchange="handleLivePhotoUpload(this)" />
       
       <div class="prompt-suggestions" id="promptSuggestions">
         <button type="button" class="prompt-pill" data-prompt="How do I approach a new home builder for a co-broker relationship?" onclick="sendPrompt(this.getAttribute('data-prompt'))">How do I approach a new home builder for a co-broker relationship?</button>
         <button type="button" class="prompt-pill" data-prompt="Why do builders refuse to cut base prices, and how should I negotiate?" onclick="sendPrompt(this.getAttribute('data-prompt'))">Why do builders refuse to cut base prices, and how should I negotiate?</button>
         <button type="button" class="prompt-pill" data-prompt="What are the best practices for registering buyers with builders?" onclick="sendPrompt(this.getAttribute('data-prompt'))">What are the best practices for registering buyers with builders?</button>
+        <button type="button" class="prompt-pill" data-prompt="What is my role when showing a new home?" onclick="sendPrompt(this.getAttribute('data-prompt'))">What is my role when showing a new home?</button>
       </div>
     </div>
   </div>
@@ -1183,21 +1282,26 @@
         "brandName": "Ask Fletch",
         "brandTag": "Real Estate Sales Coaching",
         "welcomeTitle": "Ask David Fletcher",
-        "welcomeDescription": "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.",
+        "welcomeDescription": "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Answers are based exclusively on David Fletcher's library of real estate sales courses, handbooks, articles, and blogs. You will not find the same answers with the same point of view from a chat bot that only searches the internet. This coaching is directly from the mind of David Fletcher.",
         "inputPlaceholder": "Ask about pricing, builder relationships, buyer objections...",
         "promptSuggestions": [
             "How do I approach a new home builder for a co-broker relationship?",
             "Why do builders refuse to cut base prices, and how should I negotiate?",
-            "What are the best practices for registering buyers with builders?"
-        ]
+            "What are the best practices for registering buyers with builders?",
+            "What is my role when showing a new home?"
+        ],
+        "coachPhotoUrl": "/uploads/david-fletcher.jpg",
+        "coachPhotoTitle": "David R. Fletcher",
+        "coachPhotoText": "Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.",
+        "showCoachPhotoSection": true
     },
     "designElements": {
-        "brassColor": "#9E472A",
+        "brassColor": "#9e472a",
         "inkColor": "#1C2B39",
-        "sandColor": "#F3EEE3",
-        "paperColor": "#FCFAF5",
+        "sandColor": "#f3eee3",
+        "paperColor": "#fcfaf5",
         "radius": "6px",
-        "fontPreset": "classic"
+        "fontPreset": "modern"
     }
 };
   let isLiveEditing = false;
@@ -1468,6 +1572,13 @@
     if(t.welcomeTitle && el("welcomeTitle")) el("welcomeTitle").textContent = t.welcomeTitle;
     if(t.welcomeDescription && el("welcomeDescription")) el("welcomeDescription").textContent = t.welcomeDescription;
 
+    if(t.coachPhotoUrl && el("coachPhotoImg")) el("coachPhotoImg").src = t.coachPhotoUrl;
+    if(t.coachPhotoTitle && el("coachPhotoTitle")) el("coachPhotoTitle").textContent = t.coachPhotoTitle;
+    if(t.coachPhotoText && el("coachPhotoText")) el("coachPhotoText").textContent = t.coachPhotoText;
+    if(el("coachPhotoSection")){
+      el("coachPhotoSection").style.display = (t.showCoachPhotoSection === false) ? "none" : "flex";
+    }
+
     if(t.promptSuggestions && el("promptSuggestions")){
       el("promptSuggestions").innerHTML = renderPromptPillsHtml(t.promptSuggestions, isLiveEditing);
     }
@@ -1605,7 +1716,7 @@
     originalSiteContentBeforeEdit = JSON.parse(JSON.stringify(currentSiteContent));
     document.body.classList.add("live-editing");
 
-    const editableIds = ["brandName", "brandTag", "welcomeTitle", "welcomeDescription"];
+    const editableIds = ["brandName", "brandTag", "welcomeTitle", "welcomeDescription", "coachPhotoTitle", "coachPhotoText"];
     editableIds.forEach(id => {
       const node = el(id);
       if(node){
@@ -1633,7 +1744,7 @@
     isLiveEditing = false;
     document.body.classList.remove("live-editing");
 
-    const editableIds = ["brandName", "brandTag", "welcomeTitle", "welcomeDescription"];
+    const editableIds = ["brandName", "brandTag", "welcomeTitle", "welcomeDescription", "coachPhotoTitle", "coachPhotoText"];
     editableIds.forEach(id => {
       const node = el(id);
       if(node){
@@ -1734,6 +1845,11 @@
       const welcomeDescription = el("welcomeDescription") ? el("welcomeDescription").innerText.trim() : (currentSiteContent.textElements?.welcomeDescription || "");
       const inputPlaceholder = el("liveInputPlaceholder") ? el("liveInputPlaceholder").value.trim() : (currentSiteContent.textElements?.inputPlaceholder || inputEl.placeholder);
 
+      const coachPhotoUrl = el("coachPhotoImg") ? el("coachPhotoImg").getAttribute("src") : (currentSiteContent.textElements?.coachPhotoUrl || "/uploads/david-fletcher.jpg");
+      const coachPhotoTitle = el("coachPhotoTitle") ? el("coachPhotoTitle").innerText.trim() : (currentSiteContent.textElements?.coachPhotoTitle || "David R. Fletcher");
+      const coachPhotoText = el("coachPhotoText") ? el("coachPhotoText").innerText.trim() : (currentSiteContent.textElements?.coachPhotoText || "");
+      const showCoachPhotoSection = el("coachPhotoSection") ? el("coachPhotoSection").style.display !== "none" : true;
+
       const suggestions = [];
       if(el("promptSuggestions")){
         el("promptSuggestions").querySelectorAll(".prompt-pill-text").forEach(span => {
@@ -1748,7 +1864,11 @@
         welcomeTitle: welcomeTitle,
         welcomeDescription: welcomeDescription,
         inputPlaceholder: inputPlaceholder,
-        promptSuggestions: suggestions.length ? suggestions : (currentSiteContent.textElements?.promptSuggestions || [])
+        promptSuggestions: suggestions.length ? suggestions : (currentSiteContent.textElements?.promptSuggestions || []),
+        coachPhotoUrl: coachPhotoUrl,
+        coachPhotoTitle: coachPhotoTitle,
+        coachPhotoText: coachPhotoText,
+        showCoachPhotoSection: showCoachPhotoSection
       };
 
       const designPayload = currentSiteContent.designElements || {
@@ -1802,6 +1922,82 @@
       saveBtn.innerHTML = origHtml;
     }
   }
+
+  function triggerLivePhotoUpload(){
+    const input = el("livePhotoFileInput");
+    if(input) input.click();
+  }
+
+  async function handleLivePhotoUpload(input){
+    const file = input.files && input.files[0];
+    if(!file) return;
+
+    if(!file.type.startsWith('image/')){
+      showLiveToast("Please select an image file (JPG, PNG, WEBP, GIF, SVG).", true);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      if(el("coachPhotoImg")) el("coachPhotoImg").src = dataUrl;
+
+      showLiveToast("Uploading photo...");
+      try {
+        const headers = { "Content-Type": "application/json" };
+        if(authToken) headers["Authorization"] = "Bearer " + authToken;
+
+        const res = await fetch("/api/upload-photo", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ dataUrl, fileName: file.name })
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || "Failed to upload photo");
+
+        if(el("coachPhotoImg")) el("coachPhotoImg").src = data.url;
+        if(!currentSiteContent.textElements) currentSiteContent.textElements = {};
+        currentSiteContent.textElements.coachPhotoUrl = data.url;
+        showLiveToast("✓ Photo uploaded! Click 'Save All Changes' to persist to codebase.");
+      } catch(err){
+        console.error("Live photo upload error:", err);
+        showLiveToast("Photo updated in preview. Click 'Save All Changes' to save.");
+      }
+    };
+    reader.readAsDataURL(file);
+    input.value = "";
+  }
+
+  // Support drag-and-drop onto the coach photo in live edit mode
+  document.addEventListener("DOMContentLoaded", () => {
+    const photoContainer = el("coachPhotoContainer");
+    if(photoContainer){
+      photoContainer.addEventListener("dragover", (e) => {
+        if(!isLiveEditing) return;
+        e.preventDefault();
+        photoContainer.style.outlineColor = "var(--brass)";
+        photoContainer.style.outlineWidth = "3px";
+      });
+      photoContainer.addEventListener("dragleave", () => {
+        if(!isLiveEditing) return;
+        photoContainer.style.outlineWidth = "2px";
+      });
+      photoContainer.addEventListener("drop", (e) => {
+        if(!isLiveEditing) return;
+        e.preventDefault();
+        photoContainer.style.outlineWidth = "2px";
+        if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+          const dt = new DataTransfer();
+          dt.items.add(e.dataTransfer.files[0]);
+          const fileInput = el("livePhotoFileInput");
+          if(fileInput){
+            fileInput.files = dt.files;
+            handleLivePhotoUpload(fileInput);
+          }
+        }
+      });
+    }
+  });
 
   function exportBackupJson(){
     try {
@@ -1942,27 +2138,41 @@
 
   function renderEmptyState(){
     const t = currentSiteContent?.textElements || {
-      welcomeTitle: "David R. Fletcher Coaching",
-      welcomeDescription: "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.",
+      welcomeTitle: "Ask David Fletcher",
       promptSuggestions: [
         "How do I approach a new home builder for a co-broker relationship?",
         "Why do builders refuse to cut base prices, and how should I negotiate?",
-        "What are the best practices for registering buyers with builders?"
-      ]
+        "What are the best practices for registering buyers with builders?",
+        "What is my role when showing a new home?"
+      ],
+      coachPhotoUrl: "/uploads/david-fletcher.jpg",
+      coachPhotoTitle: "David R. Fletcher",
+      coachPhotoText: "Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.",
+      showCoachPhotoSection: true
     };
     const isEdit = isLiveEditing;
+    const showPhoto = t.showCoachPhotoSection !== false;
     chatEl.innerHTML = `
       <div class="empty-state" id="emptyState">
-        <svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 24L24 8L42 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M11 21V40H37V21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M20 40V29H28V40" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <h2 id="welcomeTitle" class="${isEdit ? 'live-editable' : ''}" ${isEdit ? 'contenteditable="true"' : ''}>${escapeHtml(t.welcomeTitle)}</h2>
-        <p id="welcomeDescription" class="${isEdit ? 'live-editable' : ''}" ${isEdit ? 'contenteditable="true"' : ''}>${escapeHtml(t.welcomeDescription)}</p>
+        <h2 id="welcomeTitle" class="${isEdit ? 'live-editable' : ''}" ${isEdit ? 'contenteditable="true"' : ''}>${escapeHtml(t.welcomeTitle || 'Ask David Fletcher')}</h2>
+
+        <div class="coach-photo-section" id="coachPhotoSection" style="display:${showPhoto ? 'flex' : 'none'};">
+          <div class="coach-photo-container" id="coachPhotoContainer" title="Click or drop an image file here to change photo">
+            <img id="coachPhotoImg" src="${escapeHtml(t.coachPhotoUrl || '/uploads/david-fletcher.jpg')}" alt="${escapeHtml(t.coachPhotoTitle || 'David R. Fletcher')}" class="coach-photo" />
+            <button type="button" class="photo-upload-overlay-btn" id="photoUploadOverlayBtn" onclick="triggerLivePhotoUpload()" title="Upload or Change Photo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Upload Photo</span>
+            </button>
+          </div>
+          <div class="coach-text-block" id="coachTextBlock">
+            <h3 id="coachPhotoTitle" class="coach-photo-title ${isEdit ? 'live-editable' : ''}" ${isEdit ? 'contenteditable="true"' : ''}>${escapeHtml(t.coachPhotoTitle || 'David R. Fletcher')}</h3>
+            <p id="coachPhotoText" class="coach-photo-text ${isEdit ? 'live-editable' : ''}" ${isEdit ? 'contenteditable="true"' : ''}>${escapeHtml(t.coachPhotoText || '')}</p>
+          </div>
+        </div>
+        <input type="file" id="livePhotoFileInput" accept="image/*" style="display:none;" onchange="handleLivePhotoUpload(this)" />
         
         <div class="prompt-suggestions" id="promptSuggestions">
-          ${renderPromptPillsHtml(t.promptSuggestions, isEdit)}
+          ${renderPromptPillsHtml(t.promptSuggestions || [], isEdit)}
         </div>
       </div>
     `;

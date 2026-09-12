@@ -374,7 +374,11 @@ const DEFAULT_SITE_CONTENT = {
       "How do I approach a new home builder for a co-broker relationship?",
       "Why do builders refuse to cut base prices, and how should I negotiate?",
       "What are the best practices for registering buyers with builders?"
-    ]
+    ],
+    coachPhotoUrl: "/uploads/david-fletcher.jpg",
+    coachPhotoTitle: "David R. Fletcher",
+    coachPhotoText: "Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.",
+    showCoachPhotoSection: true
   },
   designElements: {
     brassColor: "#A9824C",
@@ -437,6 +441,17 @@ function applySiteContentToHtml(html, content) {
   // Welcome Title & Description
   html = html.replace(/<h2 id="welcomeTitle">[\s\S]*?<\/h2>/i, `<h2 id="welcomeTitle">${escapeHtmlEntities(title)}</h2>`);
   html = html.replace(/<p id="welcomeDescription">[\s\S]*?<\/p>/i, `<p id="welcomeDescription">${escapeHtmlEntities(desc)}</p>`);
+
+  // Coach Photo & Text Section
+  const photoUrl = t.coachPhotoUrl || '/uploads/david-fletcher.jpg';
+  const photoTitle = t.coachPhotoTitle || 'David R. Fletcher';
+  const photoText = t.coachPhotoText || 'Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.';
+  const showPhoto = t.showCoachPhotoSection !== false;
+
+  html = html.replace(/<div class="coach-photo-section" id="coachPhotoSection"[\s\S]*?>/i, `<div class="coach-photo-section" id="coachPhotoSection"${showPhoto ? '' : ' style="display:none;"'}>`);
+  html = html.replace(/<img id="coachPhotoImg"[\s\S]*?\/>/i, `<img id="coachPhotoImg" src="${escapeHtmlEntities(photoUrl)}" alt="${escapeHtmlEntities(photoTitle)}" class="coach-photo" />`);
+  html = html.replace(/<h3 id="coachPhotoTitle" class="coach-photo-title">[\s\S]*?<\/h3>/i, `<h3 id="coachPhotoTitle" class="coach-photo-title">${escapeHtmlEntities(photoTitle)}</h3>`);
+  html = html.replace(/<p id="coachPhotoText" class="coach-photo-text">[\s\S]*?<\/p>/i, `<p id="coachPhotoText" class="coach-photo-text">${escapeHtmlEntities(photoText)}</p>`);
 
   // Textarea placeholder
   html = html.replace(/<textarea id="input"\s+placeholder="[\s\S]*?"/i, `<textarea id="input" placeholder="${escapeHtmlEntities(placeholder)}"`);
@@ -1593,7 +1608,11 @@ app.post('/api/site-content', authMiddleware, adminMiddleware, async (req, res) 
         inputPlaceholder: (textElements.inputPlaceholder || current.textElements.inputPlaceholder || '').trim(),
         promptSuggestions: Array.isArray(textElements.promptSuggestions)
           ? textElements.promptSuggestions.map(s => typeof s === 'string' ? s.trim() : '').filter(Boolean)
-          : current.textElements.promptSuggestions
+          : current.textElements.promptSuggestions,
+        coachPhotoUrl: (textElements.coachPhotoUrl || current.textElements.coachPhotoUrl || '/uploads/david-fletcher.jpg').trim(),
+        coachPhotoTitle: (textElements.coachPhotoTitle || current.textElements.coachPhotoTitle || 'David R. Fletcher').trim(),
+        coachPhotoText: (textElements.coachPhotoText !== undefined ? textElements.coachPhotoText : (current.textElements.coachPhotoText || '')).trim(),
+        showCoachPhotoSection: textElements.showCoachPhotoSection !== undefined ? Boolean(textElements.showCoachPhotoSection) : (current.textElements.showCoachPhotoSection !== false)
       },
       designElements: {
         brassColor: designElements.brassColor || current.designElements.brassColor || '#A9824C',
@@ -1618,6 +1637,57 @@ app.post('/api/site-content', authMiddleware, adminMiddleware, async (req, res) 
   } catch (err) {
     console.error('Error saving site content:', err);
     res.status(500).json({ error: 'Internal server error saving site content' });
+  }
+});
+
+// Admin: Upload coach photo (accepts base64 data URL)
+app.post('/api/upload-photo', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    const { dataUrl, fileName } = req.body;
+    if (!dataUrl) {
+      return res.status(400).json({ error: 'Missing dataUrl in request body' });
+    }
+
+    const matches = dataUrl.match(/^data:([A-Za-z0-9\/+.-]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ error: 'Invalid data URL format. Expected base64 image data URL.' });
+    }
+
+    const mimeType = matches[1].toLowerCase();
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!allowed.includes(mimeType)) {
+      return res.status(400).json({ error: `Unsupported image format (${mimeType}). Allowed: JPG, PNG, WEBP, GIF, SVG.` });
+    }
+
+    let ext = 'jpg';
+    if (mimeType.includes('png')) ext = 'png';
+    else if (mimeType.includes('webp')) ext = 'webp';
+    else if (mimeType.includes('gif')) ext = 'gif';
+    else if (mimeType.includes('svg')) ext = 'svg';
+
+    const buffer = Buffer.from(matches[2], 'base64');
+    if (buffer.length > 15 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Image file exceeds 15MB limit.' });
+    }
+
+    const uploadsDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const rawName = fileName ? path.parse(fileName).name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) : 'coach_photo';
+    const finalFilename = `${rawName}_${Date.now()}.${ext}`;
+    const filePath = path.join(uploadsDir, finalFilename);
+
+    fs.writeFileSync(filePath, buffer);
+    const photoUrl = `/uploads/${finalFilename}`;
+
+    console.log(`✓ Photo uploaded: ${photoUrl} (${buffer.length} bytes) by ${req.user?.email || 'admin'}`);
+    res.json({ success: true, url: photoUrl, fileName: finalFilename });
+  } catch (err) {
+    console.error('Photo upload error:', err);
+    res.status(500).json({ error: 'Failed to upload photo: ' + err.message });
   }
 });
 

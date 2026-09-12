@@ -1,24 +1,29 @@
 {
   "textElements": {
     "brandName": "Ask Fletch",
-    "brandTag": "New homes coaching from David R. Fletcher",
-    "welcomeTitle": "David R. Fletcher Coaching",
-    "welcomeDescription": "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Coaching draws directly from course materials.",
+    "brandTag": "Real Estate Sales Coaching",
+    "welcomeTitle": "Ask David Fletcher",
+    "welcomeDescription": "Ask anything about new home sales, builder relationships, or overcoming buyer objections. Answers are based exclusively on David Fletcher's library of real estate sales courses, handbooks, articles, and blogs. You will not find the same answers with the same point of view from a chat bot that only searches the internet. This coaching is directly from the mind of David Fletcher.",
     "inputPlaceholder": "Ask about pricing, builder relationships, buyer objections...",
     "promptSuggestions": [
       "How do I approach a new home builder for a co-broker relationship?",
       "Why do builders refuse to cut base prices, and how should I negotiate?",
-      "What are the best practices for registering buyers with builders?"
-    ]
+      "What are the best practices for registering buyers with builders?",
+      "What is my role when showing a new home?"
+    ],
+    "coachPhotoUrl": "/uploads/david-fletcher.jpg",
+    "coachPhotoTitle": "David R. Fletcher",
+    "coachPhotoText": "Founder of the New Home Co-Broker Academy. Real estate broker and coach with 40+ years mastering builder relationships and new home sales strategies.",
+    "showCoachPhotoSection": true
   },
   "designElements": {
-    "brassColor": "#A9824C",
+    "brassColor": "#9e472a",
     "inkColor": "#1C2B39",
-    "sandColor": "#F3EEE3",
-    "paperColor": "#FCFAF5",
+    "sandColor": "#f3eee3",
+    "paperColor": "#fcfaf5",
     "radius": "6px",
-    "fontPreset": "classic"
+    "fontPreset": "modern"
   },
-  "updatedAt": "2026-09-10T18:17:49.824Z",
-  "updatedBy": "restored-client"
+  "updatedAt": "2026-09-12T11:24:07.162Z",
+  "updatedBy": "Kevin Ulgenalp"
 }

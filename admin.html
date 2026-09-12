@@ -1532,6 +1532,57 @@
           <label>Input Box Placeholder</label>
           <input type="text" class="search-input" style="max-width:none;" id="adminInputPlaceholder" placeholder="Ask about pricing, builder relationships, buyer objections..." oninput="updateAdminPreview()">
         </div>
+
+        <!-- Featured Photo & Text Section -->
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--line);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <h3 style="font-size:15px; margin:0 0 2px; color:var(--ink);">Featured Photo &amp; Text Block</h3>
+              <p style="font-size:12px; margin:0; color:var(--slate);">Coach portrait and biography displayed prominently on the home page.</p>
+            </div>
+            <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; cursor:pointer;">
+              <input type="checkbox" id="adminShowCoachPhotoSection" checked onchange="updateAdminPreview()">
+              <span>Show on Home Page</span>
+            </label>
+          </div>
+
+          <!-- Photo preview & upload row -->
+          <div style="display:flex; gap:16px; align-items:flex-start; margin-bottom:14px; padding:12px; background:var(--sand); border:1px solid var(--line); border-radius:var(--radius);">
+            <div style="position:relative; width:88px; height:88px; border-radius:var(--radius); overflow:hidden; border:2px solid var(--line); background:#fff; flex-shrink:0;">
+              <img id="adminCoachPhotoPreview" src="/uploads/david-fletcher.jpg" alt="Coach Photo Preview" style="width:100%; height:100%; object-fit:cover;" />
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="file" id="adminCoachPhotoFileInput" accept="image/*" style="display:none;" onchange="handleAdminPhotoFileInput(this)" />
+                <button type="button" class="btn primary" style="padding:6px 12px; font-size:12px;" onclick="el('adminCoachPhotoFileInput').click()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload New Photo
+                </button>
+                <button type="button" class="sm-btn" style="padding:6px 10px; font-size:11px;" onclick="useDefaultDavidPortrait()">
+                  Default Headshot
+                </button>
+              </div>
+              <div id="adminPhotoDropZone" style="border:1.5px dashed var(--line); border-radius:4px; padding:8px 10px; font-size:11px; color:var(--slate); text-align:center; background:#fff; cursor:pointer;" onclick="el('adminCoachPhotoFileInput').click()">
+                or drag and drop an image file here (JPG, PNG, WEBP, GIF, SVG)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Photo Image URL / Relative Path</label>
+            <input type="text" class="search-input" style="max-width:none; font-family:monospace; font-size:12px;" id="adminCoachPhotoUrl" placeholder="/uploads/david-fletcher.jpg" oninput="updateAdminPreview()">
+          </div>
+
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Photo Section Heading / Coach Name</label>
+            <input type="text" class="search-input" style="max-width:none;" id="adminCoachPhotoTitle" placeholder="David R. Fletcher" oninput="updateAdminPreview()">
+          </div>
+
+          <div class="form-group">
+            <label>Photo Description / Text Block (Biography &amp; Credentials)</label>
+            <textarea id="adminCoachPhotoText" style="min-height:75px; padding:10px; font-size:13px; font-family:'IBM Plex Sans', sans-serif; border:1px solid var(--line); border-radius:var(--radius); background:#fff;" placeholder="Founder of the New Home Co-Broker Academy..." oninput="updateAdminPreview()"></textarea>
+          </div>
+        </div>
       </section>
 
       <!-- Column 2: Design Elements & Live Preview -->
@@ -1629,8 +1680,17 @@
               <svg width="22" height="22" viewBox="0 0 48 48" fill="none" stroke="#A9824C" id="previewIcon" stroke-width="2.5"><path d="M6 24L24 8L42 24"/><path d="M11 21V40H37V21"/><path d="M20 40V29H28V40"/></svg>
               <span id="prevBrandName" style="font-weight:600;font-size:16px;color:#1C2B39;">Ask Fletch</span>
             </div>
-            <h3 id="prevTitle" style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 6px; color:#1C2B39;">David R. Fletcher Coaching</h3>
-            <p id="prevDesc" style="font-size:12.5px; color:#6B7280; margin:0 0 14px; line-height:1.45;">Ask anything about new home sales, builder relationships, or overcoming buyer objections.</p>
+
+            <h3 id="prevTitle" style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 10px; color:#1C2B39;">David R. Fletcher Coaching</h3>
+            <p id="prevDesc" style="display:none;"></p>
+
+            <!-- Featured Photo & Text Section in preview -->
+            <div id="prevCoachPhotoSection" style="margin: 0 auto 12px; max-width: 320px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: 6px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+              <img id="prevCoachPhotoImg" src="/uploads/david-fletcher.jpg" alt="Coach Photo" style="width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); margin-bottom: 8px;" />
+              <div id="prevCoachPhotoTitle" style="font-weight: 600; font-size: 13.5px; color: #1C2B39; margin-bottom: 3px;">David R. Fletcher</div>
+              <div id="prevCoachPhotoText" style="font-size: 11.5px; color: #6B7280; line-height: 1.4;">Founder of the New Home Co-Broker Academy...</div>
+            </div>
+
             <div id="prevPills" style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px;">
               <span style="background:#FCFAF5; border:1px solid #E4DCC8; border-radius:18px; padding:4px 10px; font-size:11px; color:#1C2B39;">Sample prompt suggestion</span>
             </div>
@@ -2366,6 +2426,12 @@
     if(el("adminWelcomeDesc")) el("adminWelcomeDesc").value = t.welcomeDescription || "";
     if(el("adminInputPlaceholder")) el("adminInputPlaceholder").value = t.inputPlaceholder || "";
 
+    if(el("adminCoachPhotoUrl")) el("adminCoachPhotoUrl").value = t.coachPhotoUrl || "/uploads/david-fletcher.jpg";
+    if(el("adminCoachPhotoTitle")) el("adminCoachPhotoTitle").value = t.coachPhotoTitle || "David R. Fletcher";
+    if(el("adminCoachPhotoText")) el("adminCoachPhotoText").value = t.coachPhotoText || "";
+    if(el("adminShowCoachPhotoSection")) el("adminShowCoachPhotoSection").checked = (t.showCoachPhotoSection !== false);
+    if(el("adminCoachPhotoPreview")) el("adminCoachPhotoPreview").src = t.coachPhotoUrl || "/uploads/david-fletcher.jpg";
+
     if(el("adminBrassPicker")) el("adminBrassPicker").value = d.brassColor || "#A9824C";
     if(el("adminBrassVal")) el("adminBrassVal").textContent = d.brassColor || "#A9824C";
 
@@ -2453,6 +2519,17 @@
     if(el("prevDesc")) el("prevDesc").textContent = desc;
     if(el("previewIcon")) el("previewIcon").setAttribute("stroke", brass);
 
+    const photoUrl = el("adminCoachPhotoUrl")?.value || "/uploads/david-fletcher.jpg";
+    const photoTitle = el("adminCoachPhotoTitle")?.value || "David R. Fletcher";
+    const photoText = el("adminCoachPhotoText")?.value || "";
+    const showPhoto = el("adminShowCoachPhotoSection") ? el("adminShowCoachPhotoSection").checked : true;
+
+    if(el("prevCoachPhotoSection")) el("prevCoachPhotoSection").style.display = showPhoto ? "flex" : "none";
+    if(el("prevCoachPhotoImg")) el("prevCoachPhotoImg").src = photoUrl;
+    if(el("prevCoachPhotoTitle")) el("prevCoachPhotoTitle").textContent = photoTitle;
+    if(el("prevCoachPhotoText")) el("prevCoachPhotoText").textContent = photoText;
+    if(el("adminCoachPhotoPreview")) el("adminCoachPhotoPreview").src = photoUrl;
+
     const prevBox = el("adminHeroPreview");
     if(prevBox){
       prevBox.style.background = sand;
@@ -2536,7 +2613,11 @@
           welcomeTitle: el("adminWelcomeTitle")?.value || "",
           welcomeDescription: el("adminWelcomeDesc")?.value || "",
           inputPlaceholder: el("adminInputPlaceholder")?.value || "",
-          promptSuggestions: prompts
+          promptSuggestions: prompts,
+          coachPhotoUrl: el("adminCoachPhotoUrl")?.value || "/uploads/david-fletcher.jpg",
+          coachPhotoTitle: el("adminCoachPhotoTitle")?.value || "David R. Fletcher",
+          coachPhotoText: el("adminCoachPhotoText")?.value || "",
+          showCoachPhotoSection: el("adminShowCoachPhotoSection") ? el("adminShowCoachPhotoSection").checked : true
         },
         designElements: {
           brassColor: el("adminBrassPicker")?.value || "#A9824C",
@@ -2583,6 +2664,77 @@
       btn.innerHTML = originalText;
     }
   }
+
+  function useDefaultDavidPortrait(){
+    if(el("adminCoachPhotoUrl")) el("adminCoachPhotoUrl").value = "/uploads/david-fletcher.jpg";
+    if(el("adminCoachPhotoPreview")) el("adminCoachPhotoPreview").src = "/uploads/david-fletcher.jpg";
+    updateAdminPreview();
+    showToast("Selected default David Fletcher portrait");
+  }
+
+  async function handleAdminPhotoFileInput(input){
+    const file = input.files && input.files[0];
+    if(!file) return;
+    await uploadAdminCoachPhotoFile(file);
+    input.value = "";
+  }
+
+  async function uploadAdminCoachPhotoFile(file){
+    if(!file.type.startsWith("image/")){
+      showToast("Please select an image file (JPG, PNG, WEBP, GIF, SVG).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      if(el("adminCoachPhotoPreview")) el("adminCoachPhotoPreview").src = dataUrl;
+      showToast("Uploading photo...");
+
+      try {
+        const res = await adminFetch("/api/upload-photo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dataUrl, fileName: file.name })
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || "Failed to upload photo");
+
+        if(el("adminCoachPhotoUrl")) el("adminCoachPhotoUrl").value = data.url;
+        if(el("adminCoachPhotoPreview")) el("adminCoachPhotoPreview").src = data.url;
+        updateAdminPreview();
+        showToast("✓ Photo uploaded successfully! Click 'Save Site Content & Design' to persist.");
+      } catch(err){
+        console.error("Admin upload photo error:", err);
+        showToast("Upload failed: " + err.message);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Setup drag-and-drop on admin photo dropzone
+  document.addEventListener("DOMContentLoaded", () => {
+    const dropZone = el("adminPhotoDropZone");
+    if(dropZone){
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "var(--brass)";
+        dropZone.style.background = "rgba(169, 130, 76, 0.08)";
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.borderColor = "var(--line)";
+        dropZone.style.background = "#fff";
+      });
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "var(--line)";
+        dropZone.style.background = "#fff";
+        if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+          uploadAdminCoachPhotoFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+  });
 
   async function reSyncBrowserMemoryToServer(){
     try {
